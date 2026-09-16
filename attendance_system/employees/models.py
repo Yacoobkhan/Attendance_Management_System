@@ -3,7 +3,7 @@ from django.db import models
 # Create your models here.
 class Employee(models.Model):
     employee_id = models.IntegerField(unique=True)
-    employee = models.CharField(max_length = 100)
+    employee_name = models.CharField(max_length = 100)
     dob = models.DateField()
     role = models.CharField(max_length = 100)
     phone = models.CharField(max_length = 15)
