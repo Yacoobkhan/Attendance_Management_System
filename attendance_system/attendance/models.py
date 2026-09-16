@@ -17,7 +17,7 @@ class Attendance(models.Model):
 
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
     date = models.DateField()
-    day = models.DateField(max_length=10)
+    day = models.CharField(max_length=10)
     check_in_time = models.TimeField(null = True, blank = True)
     check_out_time = models.TimeField(null = True, blank = True)
     status = models.CharField(max_length = 20, choices = STATUS_CHOICES)
