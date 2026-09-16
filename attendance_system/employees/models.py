@@ -12,6 +12,6 @@ class Employee(models.Model):
     is_active = models.BooleanField(default=True)
 
     def __str__(self):
-        return f"{self.employee_id} - {self.employee}"
+        return f"{self.employee_id} - {self.employee_name}"
     
 
