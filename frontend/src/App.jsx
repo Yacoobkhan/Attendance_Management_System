@@ -1,20 +1,58 @@
+import { Routes, Route } from "react-router-dom";
+
+import Layout from "./components/Layout";
+import Dashboard from "./pages/Dashboard";
+import MonthlyAttendance from "./pages/MonthlyAttendance";
+
 const App = () => {
     return (
-        <div className="flex min-h-screen items-center justify-center bg-slate-100">
+        <Routes>
 
-            <div className="rounded-2xl bg-white p-10 text-center shadow-lg">
+            <Route
+                path="/"
+                element={<Layout />}
+            >
 
-                <h1 className="text-3xl font-bold text-blue-600">
-                    Employee Attendance Management System
-                </h1>
+                <Route
+                    index
+                    element={<Dashboard />}
+                />
 
-                <p className="mt-3 text-slate-500">
-                    React + Tailwind CSS v3
-                </p>
+                <Route
+                    path="employees"
+                    element={
+                        <div>
+                            Employees
+                        </div>
+                    }
+                />
 
-            </div>
+                <Route
+                    path="attendance/daily"
+                    element={
+                        <div>
+                            Daily Attendance
+                        </div>
+                    }
+                />
 
-        </div>
+                <Route
+                    path="attendance/monthly"
+                    element={<MonthlyAttendance />}
+                />
+
+                <Route
+                    path="leave"
+                    element={
+                        <div>
+                            Leave Management
+                        </div>
+                    }
+                />
+
+            </Route>
+
+        </Routes>
     );
 };
 
