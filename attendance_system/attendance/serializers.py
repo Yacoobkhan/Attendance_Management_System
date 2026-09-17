@@ -1,7 +1,11 @@
 from rest_framework import serializers
 from .models import Attendance
+from datetime import date,time, datetime
 
 class AttendanceSerializers(serializers.ModelSerializer):
+
+    late_minutes = serializers.SerializerMethodField()
+    early_checkout_minutes = serializers.SerializerMethodField()
     class Meta:
         model = Attendance
         fields=[
@@ -12,5 +16,62 @@ class AttendanceSerializers(serializers.ModelSerializer):
             'check_in_time',
             'check_out_time',
             'status',
-            'remarks'
+            'remarks',
+            'late_minutes',
+            'early_checkout_minutes',
         ]
+
+    def validate(self,attrs):
+        check_in = attrs.get('check_in_time', getattr(self.instance,'check_in_time',None))
+        check_out = attrs.get('check_out_time',getattr(self.instance,'check_out_time',None))
+
+        attendance_date = attrs.get('date',getattr(self.instance,'date',None))
+
+        day = attrs.get('day',getattr(self.instance,'day',None))
+
+        if check_in and check_out and check_out < check_in:
+            raise serializers.ValidationError(
+                "Check-out time cannot be earlier than check-in time."
+            )
+
+        if attendance_date and attendance_date > date.today():
+            raise serializers.ValidationError(
+                "Attendance date cannot be in future"
+            )
+
+        if attendance_date and  day:
+            actual_day = attendance_date.strftime('%A')
+
+            if day != actual_day:
+                raise serializers.ValidationError(
+                    f'Day does not match the date. {attendance_date} is a {actual_day}'
+                )
+
+        
+
+        return attrs
+
+    def get_late_minutes(self,obj):
+        office_start = time(9,0)
+
+        if obj.check_in_time and obj.check_in_time > office_start:
+            check_in = datetime.combine(obj.date,obj.check_in_time)
+            office_time = datetime.combine(obj.date,office_start)
+
+            difference = check_in - office_time
+
+            return int(difference.total_seconds() / 60)
+        return 0
+
+    def get_early_checkout_minutes(self,obj):
+        office_end = time(18,0)
+
+        if obj.check_out_time and obj.check_out_time  < office_end:
+            check_out = datetime.combine(obj.date,obj.check_out_time)
+            office_time = datetime.combine(obj.date,office_end)
+
+            difference = office_time - check_out
+
+            return int(difference.total_seconds() / 60)
+
+        return 0
