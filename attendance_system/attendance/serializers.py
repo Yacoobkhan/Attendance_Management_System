@@ -29,7 +29,7 @@ class AttendanceSerializers(serializers.ModelSerializer):
 
         day = attrs.get('day',getattr(self.instance,'day',None))
 
-        status = attrs.get('status', getattr(self.instance, 'status', None))
+        #status = attrs.get('status', getattr(self.instance, 'status', None))
 
         if check_in and check_out and check_out < check_in:
             raise serializers.ValidationError(
@@ -49,26 +49,26 @@ class AttendanceSerializers(serializers.ModelSerializer):
                     f'Day does not match the date. {attendance_date} is a {actual_day}'
                 )
 
-        statuses_requiring_time = ['X', 'WFH', '0.5SL', '0.5CL']
+        # statuses_requiring_time = ['X', 'WFH', '0.5SL', '0.5CL']
 
-        statuses_not_requiring_time = ['L', 'SL', 'CL', 'NA']
+        # statuses_not_requiring_time = ['L', 'SL', 'CL', 'NA']
 
-        if status in statuses_requiring_time:
-            if not check_in:
-                raise serializers.ValidationError(
-                    "Check-in time is required for this attendance status."
-                )
+        # if status in statuses_requiring_time:
+        #     if not check_in:
+        #         raise serializers.ValidationError(
+        #             "Check-in time is required for this attendance status."
+        #         )
 
-            if not check_out:
-                raise serializers.ValidationError(
-                    "Check-out time is required for this attendance status."
-                )
+        #     if not check_out:
+        #         raise serializers.ValidationError(
+        #             "Check-out time is required for this attendance status."
+        #         )
 
-        if status in statuses_not_requiring_time:
-            if check_in or check_out:
-                raise serializers.ValidationError(
-                    "Check-in and check-out times should be empty for this attendance status."
-                )
+        # if status in statuses_not_requiring_time:
+        #     if check_in or check_out:
+        #         raise serializers.ValidationError(
+        #             "Check-in and check-out times should be empty for this attendance status."
+        #         )
 
         
 
