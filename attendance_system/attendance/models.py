@@ -21,7 +21,7 @@ class Attendance(models.Model):
     check_in_time = models.TimeField(null = True, blank = True)
     check_out_time = models.TimeField(null = True, blank = True)
     status = models.CharField(max_length = 20, choices = STATUS_CHOICES)
-    remarks = models.TextField(blank = True)\
+    remarks = models.TextField(blank = True)
     
 
     class Meta:
