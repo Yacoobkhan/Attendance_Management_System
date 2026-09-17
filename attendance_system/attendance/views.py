@@ -1,9 +1,10 @@
 from django.shortcuts import render
 from .models import Attendance
-from  .serializers import AttendanceSerializers,  DailyAttendanceReportSerializer
+from  .serializers import AttendanceSerializers, DailyAttendanceReportSerializer, MonthlyAttendanceReportSerializer
 from rest_framework import generics
 from employees.models import Employee
-from datetime import datetime
+from datetime import datetime,date
+import calendar
 
 # Create your views here.
 
@@ -92,4 +93,134 @@ class DailyAttendanceReportView(generics.ListAPIView):
                     'remarks': 'Attendance not marked',
                 })
         
+        return report
+
+class MonthlyAttendanceReportView(generics.ListAPIView):
+
+    serializer_class = MonthlyAttendanceReportSerializer
+
+    def get_queryset(self):
+
+        year = self.request.query_params.get('year')
+        month = self.request.query_params.get('month')
+
+        if not year or not month:
+            return []
+
+        year = int(year)
+        month = int(month)
+
+        number_of_days = calendar.monthrange(year, month)[1]
+
+        employees = Employee.objects.filter(
+            is_active=True
+        ).order_by('employee_id')
+
+        report = []
+
+        for employee in employees:
+
+            attendance_data = {}
+
+            working_days = 0
+            paid_holidays = 0
+            absent_days = 0
+            total_days = 0
+            holidays = 0
+            half_absent_days = 0
+            na_days = 0
+            extra_days = 0
+            wfh = 0
+
+            for day in range(1, number_of_days + 1):
+
+                attendance_date = date(year, month, day)
+
+                attendance = Attendance.objects.filter(
+                    employee=employee,
+                    date=attendance_date
+                ).first()
+
+                # Before joining date
+                if attendance_date < employee.joining_date:
+
+                    attendance_data[str(day)] = 'NA'
+                    na_days += 1
+
+                # Sunday
+                elif attendance_date.weekday() == 6:
+
+                    attendance_data[str(day)] = 'L'
+                    paid_holidays += 1
+
+                # Attendance exists
+                elif attendance:
+
+                    status = attendance.status
+
+                    attendance_data[str(day)] = status
+
+                    if status == 'X':
+
+                        working_days += 1
+
+                    elif status == 'WFH':
+
+                        working_days += 1
+                        wfh += 1
+
+                    elif status in ['SL', 'CL']:
+
+                        absent_days += 1
+
+                    elif status in ['0.5SL', '0.5CL']:
+
+                        half_absent_days += 0.5
+
+                    elif status == 'NA':
+
+                        na_days += 1
+
+                # After joining but attendance not marked
+                else:
+
+                    attendance_data[str(day)] = ''
+
+            report.append({
+
+                'employee': employee.id,
+
+                'employee_name': employee.employee_name,
+
+                'employee_type': employee.get_employee_type_display(),
+
+                'reporting_person': (
+                    employee.reporting_person.employee_name
+                    if employee.reporting_person
+                    else None
+                ),
+
+                'attendance': attendance_data,
+
+                'working_days': working_days,
+
+                'paid_holidays': paid_holidays,
+
+                'absent_days': absent_days,
+
+                'total_days': total_days,
+
+                'holidays': holidays,
+
+                'half_absent_days': half_absent_days,
+
+                'na_days': na_days,
+
+                'extra_days': extra_days,
+
+                'wfh': wfh,
+
+                'remarks': '',
+            })
+
         return report

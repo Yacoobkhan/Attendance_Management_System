@@ -153,3 +153,24 @@ class DailyAttendanceReportSerializer(serializers.ModelSerializer):
 
     #         return int(difference.total_seconds() / 60)
     #     return 0
+
+class MonthlyAttendanceReportSerializer(serializers.Serializer):
+
+    employee = serializers.IntegerField()
+    employee_name = serializers.CharField()
+    employee_type = serializers.CharField()
+    reporting_person = serializers.CharField(allow_null=True)
+
+    attendance = serializers.DictField()
+
+    working_days = serializers.FloatField()
+    paid_holidays = serializers.IntegerField()
+    absent_days = serializers.FloatField()
+    total_days = serializers.FloatField()
+    holidays = serializers.IntegerField()
+    half_absent_days = serializers.FloatField()
+    na_days = serializers.IntegerField()
+    extra_days = serializers.FloatField()
+    wfh = serializers.IntegerField()
+
+    remarks = serializers.CharField(allow_blank=True)
