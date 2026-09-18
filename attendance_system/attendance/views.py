@@ -42,57 +42,167 @@ class AttendanceDestroyView(generics.DestroyAPIView):
     queryset = Attendance.objects.all()
     serializer_class = AttendanceSerializers
 
+# class DailyAttendanceReportView(generics.ListAPIView):
+#     serializer_class =  DailyAttendanceReportSerializer
+
+#     def get_queryset(self):
+#         attendance_date = self.request.query_params.get('date')
+
+#         if not attendance_date:
+#             return []
+
+#         report_date = datetime.strptime(attendance_date, '%Y-%m-%d').date()
+
+#         report_day = report_date.strftime('%A')
+
+#         employees = Employee.objects.filter(is_active=True).order_by('employee_id')
+
+#         report = []
+
+#         for employee in employees:
+#             attendance = Attendance.objects.filter(employee=employee,date = attendance_date).first()
+            
+#             if attendance:
+#                 attendance_data = AttendanceSerializers(attendance).data
+
+#                 report.append({
+#                     'employee': employee.id,
+#                     'attendance_id': attendance.id,
+#                     'employee_id': employee.employee_id,
+#                     'employee_name': employee.employee_name,
+#                     'status': attendance.get_status_display(),
+#                     'date': attendance.date,
+#                     'day': attendance.day,
+#                     'remarks': attendance.remarks,
+#                 })
+
+#             else:
+
+#                 report.append({
+#                     'employee': employee.id,
+#                     'attendance_id': None,
+#                     'employee_id': employee.employee_id,
+#                     'employee_name': employee.employee_name,
+#                     'status': 'Not Marked',
+#                     'date': report_date,
+#                     'day': report_day,
+#                     'remarks': 'Attendance not marked',
+#                 })
+        
+#         return report
+
+from datetime import datetime
+
+from rest_framework import generics
+
+from employees.models import Employee
+from .models import Attendance
+from .serializers import DailyAttendanceReportSerializer
+
+
 class DailyAttendanceReportView(generics.ListAPIView):
-    serializer_class =  DailyAttendanceReportSerializer
+
+    serializer_class = DailyAttendanceReportSerializer
 
     def get_queryset(self):
+
         attendance_date = self.request.query_params.get('date')
 
         if not attendance_date:
             return []
 
-        report_date = datetime.strptime(attendance_date, '%Y-%m-%d').date()
+        report_date = datetime.strptime(
+            attendance_date,
+            '%Y-%m-%d'
+        ).date()
 
         report_day = report_date.strftime('%A')
 
-        employees = Employee.objects.filter(is_active=True).order_by('employee_id')
+        employees = Employee.objects.filter(
+            is_active=True
+        ).order_by('employee_id')
 
         report = []
 
         for employee in employees:
-            attendance = Attendance.objects.filter(employee=employee,date = attendance_date).first()
-            
-            if attendance:
-                attendance_data = AttendanceSerializers(attendance).data
+
+            # -----------------------------------
+            # 1. Sunday = Paid Holiday
+            # -----------------------------------
+
+            if report_day == 'Sunday':
 
                 report.append({
                     'employee': employee.id,
+                    'attendance_id': None,
+                    'employee_id': employee.employee_id,
+                    'employee_name': employee.employee_name,
+                    'status': 'Paid Holiday',
+                    'date': report_date,
+                    'day': report_day,
+                    'remarks': 'Sunday - Paid Holiday',
+                })
+
+                continue
+
+            # -----------------------------------
+            # 2. Before joining date = NA
+            # -----------------------------------
+
+            if report_date < employee.joining_date:
+
+                report.append({
+                    'employee': employee.id,
+                    'attendance_id': None,
+                    'employee_id': employee.employee_id,
+                    'employee_name': employee.employee_name,
+                    'status': 'Not Applicable',
+                    'date': report_date,
+                    'day': report_day,
+                    'remarks': 'Before joining date',
+                })
+
+                continue
+
+            # -----------------------------------
+            # 3. Check existing attendance
+            # -----------------------------------
+
+            attendance = Attendance.objects.filter(
+                employee=employee,
+                date=report_date
+            ).first()
+
+            if attendance:
+
+                report.append({
+                    'employee': employee.id,
+                    'attendance_id': attendance.id,
+                    'employee_id': employee.employee_id,
                     'employee_name': employee.employee_name,
                     'status': attendance.get_status_display(),
                     'date': attendance.date,
                     'day': attendance.day,
-                    'check_in_time': attendance.check_in_time,
-                    'check_out_time': attendance.check_out_time,
-                    'late_minutes': attendance_data['late_minutes'],
-                    'early_checkout_minutes': attendance_data['early_checkout_minutes'],
                     'remarks': attendance.remarks,
                 })
+
+            # -----------------------------------
+            # 4. Attendance not marked
+            # -----------------------------------
 
             else:
 
                 report.append({
                     'employee': employee.id,
+                    'attendance_id': None,
+                    'employee_id': employee.employee_id,
                     'employee_name': employee.employee_name,
                     'status': 'Not Marked',
                     'date': report_date,
                     'day': report_day,
-                    'check_in_time': None,
-                    'check_out_time': None,
-                    'late_minutes': 0,
-                    'early_checkout_minutes': 0,
                     'remarks': 'Attendance not marked',
                 })
-        
+
         return report
 
 class MonthlyAttendanceReportView(generics.ListAPIView):

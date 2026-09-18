@@ -4,6 +4,7 @@ import Layout from "./components/Layout";
 import Dashboard from "./pages/Dashboard";
 import MonthlyAttendance from "./pages/MonthlyAttendance";
 import Employees from "./pages/Employees";
+import DailyAttendance from "./pages/DailyAttendance";
 
 const App = () => {
     return (
@@ -26,11 +27,7 @@ const App = () => {
 
                 <Route
                     path="attendance/daily"
-                    element={
-                        <div>
-                            Daily Attendance
-                        </div>
-                    }
+                    element={<DailyAttendance />}
                 />
 
                 <Route

@@ -7,6 +7,32 @@ const Employees = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
+    const [showAddEmployee,setShowAddEmployee] = useState(false)
+
+    const [selectedEmployees, setSelectedEmployees] = useState(null);
+    const [showEmployeeOptions,setShowEmployeeOptions] = useState(false);
+
+    const [showEditEmployee,setShowEditEmployee] = useState(false);
+
+
+    const [formData,setFormData] = useState({
+        employee_name: "",
+        dob: "",
+        role: "",
+        phone: "",
+        mail: "",
+        joining_date: "",
+        employee_type: "EMPLOYEE",
+        // reporting_person: "",
+        is_active: true
+    })
+
+    const handleEmployeeDoubleClick = (employee) =>{
+            setSelectedEmployees(employee);
+
+            setShowEmployeeOptions(true);
+    }
+
     const fetchEmployees = async () => {
 
         try {
@@ -30,6 +56,154 @@ const Employees = () => {
 
             setLoading(false);
 
+        }
+    };
+
+    const handleInputChange = (event) =>{
+        const {name,value,type,checked} = event.target;
+
+        setFormData({
+            ...formData,
+            [name]: type === "checkbox" ? checked:value,
+        })
+    }
+
+    const handleAddEmployee = async () => {
+
+            try {
+
+                const data = {
+                    employee_name: formData.employee_name,
+                    dob: formData.dob,
+                    role: formData.role,
+                    phone: formData.phone,
+                    mail: formData.mail,
+                    joining_date: formData.joining_date,
+                    employee_type: formData.employee_type,
+                    is_active: formData.is_active,
+                };
+
+                console.log("Adding Employee:", data);
+
+                await api.post(
+                    "/employees/",
+                    data
+                );
+
+                alert("Employee added successfully.");
+
+                setShowAddEmployee(false);
+
+                setFormData({
+                    employee_name: "",
+                    dob: "",
+                    role: "",
+                    phone: "",
+                    mail: "",
+                    joining_date: "",
+                    employee_type: "EMPLOYEE",
+                    // reporting_person: "",
+                    is_active: true,
+                });
+
+                await fetchEmployees();
+
+            } catch (error) {
+
+                console.error(
+                    "Add employee failed:",
+                    error
+                );
+
+                console.error(
+                    "Backend error:",
+                    error.response?.data
+                );
+
+                alert(
+                    "Failed to add employee."
+                );
+            }
+    };
+
+    const handleUpdateEmployee = async () => {
+
+        if (!selectedEmployees) {
+            return;
+        }
+
+        try {
+
+            const data = {
+                employee_name: formData.employee_name,
+                dob: formData.dob,
+                role: formData.role,
+                phone: formData.phone,
+                mail: formData.mail,
+                joining_date: formData.joining_date,
+                employee_type: formData.employee_type,
+                is_active: formData.is_active,
+            };
+
+            console.log("Updating Employee:", data);
+
+            await api.patch(
+                `/employees/${selectedEmployees.id}/update/`,
+                data
+            );
+
+            alert("Employee updated successfully.");
+
+            setShowEditEmployee(false);
+            setSelectedEmployees(null);
+
+            await fetchEmployees();
+
+        } catch (error) {
+
+            console.error(
+                "Update employee failed:",
+                error
+            );
+
+            console.error(
+                "Backend error:",
+                error.response?.data
+            );
+
+            alert(
+                error.response?.data?.detail ||
+                "Failed to update employee."
+            );
+        }
+    };
+
+    const handleDeleteEmployee = async () => {
+
+        if (!selectedEmployees) {
+            return;
+        }
+
+        try {
+
+            console.log( "Deleting Employee:", selectedEmployees.id);
+
+            await api.delete(`/employees/${selectedEmployees.id}/destroy/`);
+
+            alert("Employee deleted successfully.");
+
+            setShowEmployeeOptions(false);
+            setSelectedEmployees(null);
+
+            await fetchEmployees();
+
+        } catch (error) {
+
+            console.error("Delete employee failed:", error);
+
+            console.error( "Backend error:", error.response?.data);
+
+            alert( error.response?.data?.detail || "Failed to delete employee.");
         }
     };
 
@@ -61,6 +235,7 @@ const Employees = () => {
 
                 <button
                     type="button"
+                    onClick={() => setShowAddEmployee(true)}
                     className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-blue-700"
                 >
                     Add Employee
@@ -108,6 +283,10 @@ const Employees = () => {
                                     </th>
 
                                     <th className="px-4 py-3 text-left font-semibold text-slate-600">
+                                        Employment Type
+                                    </th>
+
+                                    <th className="px-4 py-3 text-left font-semibold text-slate-600">
                                         Role
                                     </th>
 
@@ -138,6 +317,7 @@ const Employees = () => {
 
                                     <tr
                                         key={employee.id}
+                                        onClick={() => handleEmployeeDoubleClick(employee)}
                                         className="border-t border-slate-200 transition hover:bg-slate-50"
                                     >
 
@@ -151,6 +331,10 @@ const Employees = () => {
 
                                         <td className="px-4 py-4 text-slate-600">
                                             {employee.dob}
+                                        </td>
+
+                                         <td className="px-4 py-4 text-slate-600">
+                                            {employee.employee_type}
                                         </td>
 
                                         <td className="px-4 py-4 text-slate-600">
@@ -193,6 +377,496 @@ const Employees = () => {
                             </tbody>
 
                         </table>
+
+                    </div>
+
+                </div>
+
+            )}
+
+
+            {showAddEmployee && (
+
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+
+                    <div className="w-full max-w-3xl rounded-2xl bg-white p-6 shadow-xl">
+
+                        <div className="mb-6 flex items-center justify-between">
+
+                            <div>
+
+                                <h2 className="text-xl font-semibold text-slate-800">
+                                    Add Employee
+                                </h2>
+
+                                <p className="mt-1 text-sm text-slate-500">
+                                    Enter the employee details below.
+                                </p>
+
+                            </div>
+
+                            <button type="button" onClick={() => setShowAddEmployee(false)}  className="rounded-lg px-3 py-2 text-sm text-slate-500 hover:bg-slate-100">
+                                Cancel
+                            </button>
+
+                        </div>
+
+
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+
+                            {/* Employee Name */}
+
+                            <div>
+
+                                <label className="mb-2 block text-sm font-medium text-slate-700">
+                                    Employee Name
+                                </label>
+
+                                <input type="text" name="employee_name" value={formData.employee_name} onChange={handleInputChange} className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm outline-none focus:border-blue-500"/>
+
+                            </div>
+
+
+                            {/* DOB */}
+
+                            <div>
+
+                                <label className="mb-2 block text-sm font-medium text-slate-700">
+                                    Date of Birth
+                                </label>
+
+                                <input type="date" name="dob"  value={formData.dob}  onChange={handleInputChange}
+                                    className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm outline-none focus:border-blue-500"
+                                />
+
+                            </div>
+
+
+                            {/* Role */}
+
+                            <div>
+
+                                <label className="mb-2 block text-sm font-medium text-slate-700">
+                                    Role
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="role"
+                                    value={formData.role}
+                                    onChange={handleInputChange}
+                                    className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm outline-none focus:border-blue-500"
+                                />
+
+                            </div>
+
+
+                            {/* Phone */}
+
+                            <div>
+
+                                <label className="mb-2 block text-sm font-medium text-slate-700">
+                                    Phone
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="phone"
+                                    value={formData.phone}
+                                    onChange={handleInputChange}
+                                    className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm outline-none focus:border-blue-500"
+                                />
+
+                            </div>
+
+
+                            {/* Email */}
+
+                            <div>
+
+                                <label className="mb-2 block text-sm font-medium text-slate-700">
+                                    Email
+                                </label>
+
+                                <input
+                                    type="email"
+                                    name="mail"
+                                    value={formData.mail}
+                                    onChange={handleInputChange}
+                                    className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm outline-none focus:border-blue-500"
+                                />
+
+                            </div>
+
+
+                            {/* Joining Date */}
+
+                            <div>
+
+                                <label className="mb-2 block text-sm font-medium text-slate-700">
+                                    Joining Date
+                                </label>
+
+                                <input
+                                    type="date"
+                                    name="joining_date"
+                                    value={formData.joining_date}
+                                    onChange={handleInputChange}
+                                    className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm outline-none focus:border-blue-500"
+                                />
+
+                            </div>
+
+
+                            {/* Employee Type */}
+
+                            <div>
+
+                                <label className="mb-2 block text-sm font-medium text-slate-700">
+                                    Employee Type
+                                </label>
+
+                                <select
+                                    name="employee_type"
+                                    value={formData.employee_type}
+                                    onChange={handleInputChange}
+                                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm outline-none focus:border-blue-500"
+                                >
+
+                                    <option value="EMPLOYEE">
+                                        Employee
+                                    </option>
+
+                                    <option value="INTERN">
+                                        Intern
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+
+                            {/* Reporting Person */}
+
+                            {/* <div>
+
+                                <label className="mb-2 block text-sm font-medium text-slate-700">
+                                    Reporting Person
+                                </label>
+
+                                <input
+                                    type="number"
+                                    name="reporting_person"
+                                    value={formData.reporting_person}
+                                    onChange={handleInputChange}
+                                    placeholder="Database ID"
+                                    className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm outline-none focus:border-blue-500"
+                                />
+
+                            </div> */}
+
+                        </div>
+
+
+                        <div className="mt-6 flex items-center justify-between">
+
+                            <label className="flex items-center gap-2 text-sm text-slate-700">
+
+                                <input
+                                    type="checkbox"
+                                    name="is_active"
+                                    checked={formData.is_active}
+                                    onChange={handleInputChange}
+                                    className="h-4 w-4 rounded border-slate-300"
+                                />
+
+                                Active Employee
+
+                            </label>
+
+
+                            <div className="flex gap-3">
+
+                                <button
+                                    type="button"
+                                    onClick={() => setShowAddEmployee(false)}
+                                    className="rounded-xl border border-slate-200 px-5 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50"
+                                >
+                                    Cancel
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={handleAddEmployee}
+                                    className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-700"
+                                >
+                                    Save Employee
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            )}
+
+
+            {showEmployeeOptions && selectedEmployees && (
+
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+
+                    <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+
+                        <div className="mb-5">
+
+                            <h3 className="text-lg font-semibold text-slate-800">
+                                Employee Options
+                            </h3>
+
+                            <p className="mt-1 text-sm text-slate-500">
+                                {selectedEmployees.employee_name}
+                            </p>
+
+                        </div>
+
+                        <div className="flex flex-col gap-3">
+
+                            <button
+                                type="button"
+                                 onClick={() => {
+
+                                    setFormData({
+                                        employee_name: selectedEmployees.employee_name,
+                                        dob: selectedEmployees.dob,
+                                        role: selectedEmployees.role,
+                                        phone: selectedEmployees.phone,
+                                        mail: selectedEmployees.mail,
+                                        joining_date: selectedEmployees.joining_date,
+                                        employee_type: selectedEmployees.employee_type,
+                                        is_active: selectedEmployees.is_active,
+                                    });
+
+                                    setShowEmployeeOptions(false);
+                                    setShowEditEmployee(true);
+
+                                }}
+                                className="w-full rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-700"
+                            >
+                                Edit Employee
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={() => {
+
+                                    const confirmed = window.confirm(
+                                        `Are you sure you want to delete ${selectedEmployees.employee_name}?`
+                                    );
+
+                                    if (confirmed) {
+                                        handleDeleteEmployee();
+                                    }
+
+                                }}
+                                className="w-full rounded-xl bg-red-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-red-700"
+                            >
+                                Delete Employee
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setSelectedEmployees(null);
+                                    setShowEmployeeOptions(false);
+                                }}
+                                className="w-full rounded-xl border border-slate-300 px-5 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50"
+                            >
+                                Cancel
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            )}
+
+            {showEditEmployee && selectedEmployees && (
+
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+
+                    <div className="w-full max-w-3xl rounded-2xl bg-white p-6 shadow-xl">
+
+                        <div className="mb-5 flex items-center justify-between">
+
+                            <div>
+                                <h3 className="text-lg font-semibold text-slate-800">
+                                    Edit Employee
+                                </h3>
+
+                                <p className="mt-1 text-sm text-slate-500">
+                                    Update employee information.
+                                </p>
+                            </div>
+
+                            <button
+                                type="button"
+                                onClick={() => setShowEditEmployee(false)}
+                                className="rounded-lg px-3 py-2 text-sm text-slate-500 hover:bg-slate-100"
+                            >
+                                Cancel
+                            </button>
+
+                        </div>
+
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+
+                            <div>
+                                <label className="mb-1 block text-sm font-medium text-slate-700">
+                                    Employee Name
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="employee_name"
+                                    value={formData.employee_name}
+                                    onChange={handleInputChange}
+                                    className="w-full rounded-xl border border-slate-300 px-4 py-2.5 outline-none focus:border-blue-500"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="mb-1 block text-sm font-medium text-slate-700">
+                                    DOB
+                                </label>
+
+                                <input
+                                    type="date"
+                                    name="dob"
+                                    value={formData.dob}
+                                    onChange={handleInputChange}
+                                    className="w-full rounded-xl border border-slate-300 px-4 py-2.5 outline-none focus:border-blue-500"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="mb-1 block text-sm font-medium text-slate-700">
+                                    Role
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="role"
+                                    value={formData.role}
+                                    onChange={handleInputChange}
+                                    className="w-full rounded-xl border border-slate-300 px-4 py-2.5 outline-none focus:border-blue-500"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="mb-1 block text-sm font-medium text-slate-700">
+                                    Phone
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="phone"
+                                    value={formData.phone}
+                                    onChange={handleInputChange}
+                                    className="w-full rounded-xl border border-slate-300 px-4 py-2.5 outline-none focus:border-blue-500"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="mb-1 block text-sm font-medium text-slate-700">
+                                    Email
+                                </label>
+
+                                <input
+                                    type="email"
+                                    name="mail"
+                                    value={formData.mail}
+                                    onChange={handleInputChange}
+                                    className="w-full rounded-xl border border-slate-300 px-4 py-2.5 outline-none focus:border-blue-500"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="mb-1 block text-sm font-medium text-slate-700">
+                                    Joining Date
+                                </label>
+
+                                <input
+                                    type="date"
+                                    name="joining_date"
+                                    value={formData.joining_date}
+                                    onChange={handleInputChange}
+                                    className="w-full rounded-xl border border-slate-300 px-4 py-2.5 outline-none focus:border-blue-500"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="mb-1 block text-sm font-medium text-slate-700">
+                                    Employee Type
+                                </label>
+
+                                <select
+                                    name="employee_type"
+                                    value={formData.employee_type}
+                                    onChange={handleInputChange}
+                                    className="w-full rounded-xl border border-slate-300 px-4 py-2.5 outline-none focus:border-blue-500"
+                                >
+                                    <option value="EMPLOYEE">
+                                        Employee
+                                    </option>
+
+                                    <option value="INTERN">
+                                        Intern
+                                    </option>
+                                </select>
+                            </div>
+
+                            <div className="flex items-center gap-3 pt-7">
+
+                                <input
+                                    type="checkbox"
+                                    name="is_active"
+                                    checked={formData.is_active}
+                                    onChange={handleInputChange}
+                                    className="h-4 w-4"
+                                />
+
+                                <label className="text-sm font-medium text-slate-700">
+                                    Active Employee
+                                </label>
+
+                            </div>
+
+                        </div>
+
+                        <div className="mt-6 flex justify-end gap-3">
+
+                            <button
+                                type="button"
+                                onClick={() => setShowEditEmployee(false)}
+                                className="rounded-xl border border-slate-300 px-5 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50"
+                            >
+                                Cancel
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={handleUpdateEmployee}
+                                className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-700"
+                            >
+                                Update Employee
+                            </button>
+
+                        </div>
 
                     </div>
 

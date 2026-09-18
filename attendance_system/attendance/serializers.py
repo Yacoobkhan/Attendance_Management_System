@@ -101,58 +101,27 @@ class AttendanceSerializers(serializers.ModelSerializer):
 
 class DailyAttendanceReportSerializer(serializers.ModelSerializer):
 
-    employee_name = serializers.CharField()
     employee = serializers.IntegerField()
+    attendance_id = serializers.IntegerField(allow_null=True)
+    employee_id = serializers.IntegerField()
+    employee_name = serializers.CharField()
     status = serializers.CharField()
     date = serializers.DateField()
     day = serializers.CharField(allow_blank=True)
-    check_in_time = serializers.TimeField(allow_null=True)
-    check_out_time = serializers.TimeField(allow_null=True)
-    late_minutes = serializers.IntegerField()
-    early_checkout_minutes = serializers.IntegerField()
     remarks = serializers.CharField(allow_blank=True)
-
-    # late_minutes = serializers.SerializerMethodField()
-    # early_checkout_minutes = serializers.SerializerMethodField()
 
     class Meta:
         model = Attendance
-        fields=[
+        fields = [
             'employee',
+            'attendance_id',
+            'employee_id',
             'employee_name',
             'status',
             'date',
             'day',
-            'check_in_time',
-            'check_out_time',
-            'late_minutes',
-            'early_checkout_minutes',
             'remarks'
         ]
-
-    # def get_late_minutes(self,obj):
-    #     office_start = time(9,0)
-
-    #     if obj.check_in_time and obj.check_in_time > office_start:
-    #         check_in = datetime.combine(obj.date,obj.check_in_time)
-    #         office_time = datetime.combine(obj.date,office_start)
-
-    #         difference = check_in - office_time
-
-    #         return int(difference.total_seconds() /60)
-    #     return 0
-
-    # def get_early_checkout_minutes(self,obj):
-    #     office_end = time(18,0)
-
-    #     if obj.check_out_time and obj.check_out_time < office_end:  
-    #         check_out = datetime.combine(obj.date,obj.check_out_time)
-    #         office_time = datetime.combine(obj.date,office_end)
-
-    #         difference = office_time - check_out
-
-    #         return int(difference.total_seconds() / 60)
-    #     return 0
 
 class MonthlyAttendanceReportSerializer(serializers.Serializer):
 
