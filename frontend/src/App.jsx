@@ -3,6 +3,7 @@ import { Routes, Route } from "react-router-dom";
 import Layout from "./components/Layout";
 import Dashboard from "./pages/Dashboard";
 import MonthlyAttendance from "./pages/MonthlyAttendance";
+import Employees from "./pages/Employees";
 
 const App = () => {
     return (
@@ -20,11 +21,7 @@ const App = () => {
 
                 <Route
                     path="employees"
-                    element={
-                        <div>
-                            Employees
-                        </div>
-                    }
+                    element={<Employees />}
                 />
 
                 <Route
