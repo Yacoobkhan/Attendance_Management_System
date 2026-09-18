@@ -1,6 +1,16 @@
 import {Search} from "lucide-react";
+import { useState } from "react";
 
-const Header = () => {
+const Header = ({onSearch}) => {
+
+    const [searchValue, setSearchValue] = useState("");
+
+    const handleSearchChange = (event) => {
+        const value = event.target.value;
+        setSearchValue(value)
+        onSearch(value)
+    }
+
     return (
         <header className="sticky top-0 z-30 flex h-20 items-center justify-between border-b border-slate-200 bg-white px-6">
 
@@ -15,6 +25,8 @@ const Header = () => {
 
                     <input
                         type="text"
+                        value={searchValue}
+                        onChange={handleSearchChange}
                         placeholder="Search..."
                         className="w-full bg-transparent text-sm outline-none placeholder:text-slate-400"
                     />

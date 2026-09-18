@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from "react";
+import { useOutletContext } from "react-router-dom";
 import api from "../services/api";
 
 
 const DailyAttendance = () => {
 
     const [attendanceRecords, setAttendanceRecords] = useState([]);
+
+    const {searchValue} = useOutletContext();
 
     const [selectedDate, setSelectedDate] = useState(
         new Date().toISOString().split("T")[0]
@@ -175,6 +178,15 @@ const DailyAttendance = () => {
             (record) => record.status === status
         ).length;
     };
+
+    // -----------------------------------
+    // Filtered Attendance Record
+    // -----------------------------------
+
+    const filteredAttedanceRecords = attendanceRecords.filter(
+        (record) => 
+            record.employee_id.toString().toLowerCase().includes(searchValue.toLowerCase()) || record.employee_name.toLowerCase().includes(searchValue.toLowerCase())
+    )
 
 
     // -----------------------------------
@@ -629,7 +641,7 @@ const DailyAttendance = () => {
 
                             <tbody>
 
-                                {attendanceRecords.map(
+                                {filteredAttedanceRecords.map(
                                     (record) => {
 
                                         const isNotEditable =
