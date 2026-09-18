@@ -158,7 +158,10 @@ class MonthlyAttendanceReportView(generics.ListAPIView):
 
                     status = attendance.status
 
-                    attendance_data[str(day)] = status
+                    attendance_data[str(day)] = {
+                        'id':attendance.id,
+                        'status': status
+                    }
 
                     if status == 'X':
 

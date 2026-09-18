@@ -93,9 +93,13 @@ const MonthlyAttendance = () => {
 
         const date = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 
-        const status = employee.attendance[String(day)] || "";
+        const attendance = employee.attendance[String(day)] || "";
 
-        setSelectedCell({employee: employee.employee, employee_name: employee.employee_name, day: day, date: date, status: status,});
+        const status = typeof attendance === "object" ? attendance.status : attendance;
+
+        const attendanceId = typeof attendance === "object" ? attendance.id : null;
+
+        setSelectedCell({ employee: employee.employee, employee_name: employee.employee_name, day: day, date: date, status: status, attendance_id : attendanceId });
         setSelectedStatus(status);
     };
 
@@ -103,54 +107,59 @@ const MonthlyAttendance = () => {
 
     const handleSaveAttendance = async () => {
 
-    if (!selectedCell) {
-        return;
-    }
+        if (!selectedCell) {
+            return;
+        }
 
-    if (!selectedStatus) {
-        alert("Please select an attendance status.");
-        return;
-    }
+        if (!selectedStatus) {
+            alert("Please select an attendance status.");
+            return;
+        }
 
-    try {
+        try {
 
-        setSaving(true);
+            setSaving(true);
 
-        const data = {employee: selectedCell.employee, date: selectedCell.date,
-            day: new Date(selectedCell.date).toLocaleDateString(
-                "en-US",
-                {
-                    weekday: "long",
-                }
-            ),
-            status: selectedStatus,
-            remarks: "",
-        };
+            const data = {
+                employee: selectedCell.employee, date: selectedCell.date,
+                day: new Date(selectedCell.date).toLocaleDateString(
+                    "en-US",
+                    {
+                        weekday: "long",
+                    }
+                ),
+                status: selectedStatus,
+                remarks: "",
+            };
 
-        console.log("Saving Attendance:", data);
+            console.log("Saving Attendance:", data);
 
-        await api.post("/attendance/create/",data);
+            if(selectedCell.attendance_id){
+                await api.patch(`/attendance/${selectedCell.attendance_id}/update/`,data)
+            }else{
+                await api.post(`/attendance/create/`,data)
+            }
 
-        alert("Attendance saved successfully.");
+            alert("Attendance saved successfully.");
 
-        setSelectedCell(null);
-        setSelectedStatus("");
+            setSelectedCell(null);
+            setSelectedStatus("");
 
-        await handleViewReport();
+            await handleViewReport();
 
-    } catch (error) {
+        } catch (error) {
 
-        console.error("Save attendance failed:",error);
+            console.error("Save attendance failed:", error);
 
-        console.error("Backend error:",error.response?.data);
+            console.error("Backend error:", error.response?.data);
 
-        alert(error.response?.data?.detail || "Failed to save attendance.");
+            alert(error.response?.data?.detail || "Failed to save attendance.");
 
-    } finally {
-        setSaving(false);
+        } finally {
+            setSaving(false);
 
-    }
-};
+        }
+    };
 
     return (
         <div>
@@ -216,9 +225,9 @@ const MonthlyAttendance = () => {
                         </label>
 
                         <select value={year} onChange={(event) => setYear(
-                                    Number(event.target.value)
-                                )
-                            }
+                            Number(event.target.value)
+                        )
+                        }
                             className="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm outline-none focus:border-blue-500"
                         >
 
@@ -443,17 +452,9 @@ const MonthlyAttendance = () => {
                                 <tbody>
 
                                     {report.map(
-                                        (
-                                            employee,
-                                            index
-                                        ) => (
+                                        (employee, index) => (
 
-                                            <tr
-                                                key={
-                                                    employee.employee
-                                                }
-                                                className="hover:bg-slate-50"
-                                            >
+                                            <tr key={employee.employee} className="hover:bg-slate-50">
 
                                                 <td className="border border-slate-200 px-4 py-3 text-center">
                                                     {index + 1}
@@ -485,40 +486,21 @@ const MonthlyAttendance = () => {
                                                 {/* Attendance Days */}
 
                                                 {Array.from(
-                                                    {
-                                                        length:
-                                                            numberOfDays
-                                                    },
-                                                    (
-                                                        _,
-                                                        index
-                                                    ) => {
+                                                    { length: numberOfDays },
+                                                    (_, index) => {
 
-                                                        const day =
-                                                            index +
-                                                            1;
+                                                        const day = index + 1;
+
+                                                        const attendance = employee.attendance[String(day)] || "";
 
                                                         const status =
-                                                            employee
-                                                                .attendance[
-                                                                String(
-                                                                    day
-                                                                )
-                                                            ] ||
-                                                            "";
+                                                                typeof attendance === "object"
+                                                                    ? attendance.status
+                                                                    : attendance;
 
                                                         return (
 
-                                                            <td
-                                                                key={day}
-                                                                onClick={() =>
-                                                                    handleCellClick(
-                                                                        employee,
-                                                                        day
-                                                                    )
-                                                                }
-                                                                className="cursor-pointer border border-slate-200 px-2 py-2 text-center hover:bg-blue-50"
-                                                            >
+                                                            <td key={day} onClick={() => handleCellClick(employee, day)} className="cursor-pointer border border-slate-200 px-2 py-2 text-center hover:bg-blue-50">
 
                                                                 <span
                                                                     className={`inline-flex min-w-10 items-center justify-center rounded-md px-2 py-1 text-xs font-semibold ${getStatusClass(
@@ -711,163 +693,155 @@ const MonthlyAttendance = () => {
 
             {selectedCell && (
 
-                <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
 
-                    <div className="mb-5 flex items-center justify-between">
+                    <div className="w-full max-w-3xl rounded-2xl bg-white p-6 shadow-xl">
 
-                        <div>
+                        <div className="mb-5 flex items-center justify-between">
 
-                            <h3 className="text-lg font-semibold text-slate-800">
-                                Edit Attendance
-                            </h3>
+                            <div>
 
-                            <p className="mt-1 text-sm text-slate-500">
-                                Update attendance for the selected employee and date.
-                            </p>
+                                <h3 className="text-lg font-semibold text-slate-800">
+                                    Edit Attendance
+                                </h3>
 
-                        </div>
+                                <p className="mt-1 text-sm text-slate-500">
+                                    Update attendance for the selected employee and date.
+                                </p>
 
+                            </div>
 
-                        <button
-                            type="button"
-                            onClick={() =>
-                                setSelectedCell(null)
-                            }
-                            className="rounded-lg px-3 py-2 text-sm text-slate-500 hover:bg-slate-100 hover:text-slate-700"
-                        >
-                            Cancel
-                        </button>
-
-                    </div>
-
-
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-
-
-                        {/* Employee */}
-
-                        <div>
-
-                            <label className="mb-2 block text-sm font-medium text-slate-700">
-                                Employee
-                            </label>
-
-                            <input
-                                type="text"
-                                value={
-                                    selectedCell.employee_name
-                                }
-                                readOnly
-                                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-700 outline-none"
-                            />
-
-                        </div>
-
-
-                        {/* Date */}
-
-                        <div>
-
-                            <label className="mb-2 block text-sm font-medium text-slate-700">
-                                Date
-                            </label>
-
-                            <input
-                                type="text"
-                                value={
-                                    selectedCell.date
-                                }
-                                readOnly
-                                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-700 outline-none"
-                            />
-
-                        </div>
-
-
-                        {/* Status */}
-
-                        <div>
-
-                            <label className="mb-2 block text-sm font-medium text-slate-700">
-                                Attendance Status
-                            </label>
-
-                            <select
-                                value={selectedStatus}
-                                onChange={(event) =>
-                                    setSelectedStatus(
-                                        event.target.value
-                                    )
-                                }
-                                className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm outline-none focus:border-blue-500"
+                            <button
+                                type="button"
+                                onClick={() => setSelectedCell(null)}
+                                className="rounded-lg px-3 py-2 text-sm text-slate-500 hover:bg-slate-100 hover:text-slate-700"
                             >
-
-                                <option value="">
-                                    Select Status
-                                </option>
-
-
-                                <option value="X">
-                                    X - Present
-                                </option>
-
-
-                                <option value="WFH">
-                                    WFH - Work From Home
-                                </option>
-
-
-                                <option value="SL">
-                                    SL - Sick Leave
-                                </option>
-
-
-                                <option value="CL">
-                                    CL - Casual Leave
-                                </option>
-
-
-                                <option value="0.5SL">
-                                    0.5SL - Half Sick Leave
-                                </option>
-
-
-                                <option value="0.5CL">
-                                    0.5CL - Half Casual Leave
-                                </option>
-
-
-                                <option value="L">
-                                    L - Leave
-                                </option>
-
-
-                                <option value="NA">
-                                    NA - Not Applicable
-                                </option>
-
-                            </select>
+                                Cancel
+                            </button>
 
                         </div>
 
-                    </div>
+
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
 
 
-                    {/* Save Button */}
+                            {/* Employee */}
 
-                    <div className="mt-5 flex justify-end">
+                            <div>
 
-                        <button
-                            type="button"
-                            onClick={handleSaveAttendance}
-                            disabled={saving}
-                            className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
-                        >
-                            {saving
-                                ? "Saving..."
-                                : "Save Attendance"
-                            }
-                        </button>
+                                <label className="mb-2 block text-sm font-medium text-slate-700">
+                                    Employee
+                                </label>
+
+                                <input
+                                    type="text"
+                                    value={selectedCell.employee_name}
+                                    readOnly
+                                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-700 outline-none"
+                                />
+
+                            </div>
+
+
+                            {/* Date */}
+
+                            <div>
+
+                                <label className="mb-2 block text-sm font-medium text-slate-700">
+                                    Date
+                                </label>
+
+                                <input
+                                    type="text"
+                                    value={selectedCell.date}
+                                    readOnly
+                                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-700 outline-none"
+                                />
+
+                            </div>
+
+
+                            {/* Status */}
+
+                            <div>
+
+                                <label className="mb-2 block text-sm font-medium text-slate-700">
+                                    Attendance Status
+                                </label>
+
+                                <select
+                                    value={selectedStatus}
+                                    onChange={(event) =>
+                                        setSelectedStatus(event.target.value)
+                                    }
+                                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm outline-none focus:border-blue-500"
+                                >
+
+                                    <option value="">
+                                        Select Status
+                                    </option>
+
+                                    <option value="X">
+                                        X - Present
+                                    </option>
+
+                                    <option value="WFH">
+                                        WFH - Work From Home
+                                    </option>
+
+                                    <option value="SL">
+                                        SL - Sick Leave
+                                    </option>
+
+                                    <option value="CL">
+                                        CL - Casual Leave
+                                    </option>
+
+                                    <option value="0.5SL">
+                                        0.5SL - Half Sick Leave
+                                    </option>
+
+                                    <option value="0.5CL">
+                                        0.5CL - Half Casual Leave
+                                    </option>
+
+                                    <option value="L">
+                                        L - Leave
+                                    </option>
+
+                                    <option value="NA">
+                                        NA - Not Applicable
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+                        </div>
+
+
+                        {/* Buttons */}
+
+                        <div className="mt-6 flex justify-end gap-3">
+
+                            <button
+                                type="button"
+                                onClick={() => setSelectedCell(null)}
+                                className="rounded-xl border border-slate-200 px-5 py-2.5 text-sm font-medium text-slate-600 transition hover:bg-slate-50"
+                            >
+                                Cancel
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={handleSaveAttendance}
+                                disabled={saving}
+                                className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                            >
+                                {saving ? "Saving..." : "Save Attendance"}
+                            </button>
+
+                        </div>
 
                     </div>
 
