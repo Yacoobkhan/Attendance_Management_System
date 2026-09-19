@@ -19,7 +19,7 @@ class Employee(models.Model):
 
     employee_type = models.CharField(max_length=20,choices=EMPLOYEE_TYPE_CHOICES)
 
-    reporting_person = models.ForeignKey('self', on_delete=models.SET_NULL, null=True,blank=True, related_name='reporting_employees')
+    reporting_person = models.CharField( max_length=100, blank=True, null=True)
 
 
     def save(self,*args,**kwargs):

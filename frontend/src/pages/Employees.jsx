@@ -23,7 +23,7 @@ const Employees = () => {
         mail: "",
         joining_date: "",
         employee_type: "EMPLOYEE",
-        // reporting_person: "",
+        reporting_person: "",
         is_active: true
     })
 
@@ -80,6 +80,7 @@ const Employees = () => {
                     mail: formData.mail,
                     joining_date: formData.joining_date,
                     employee_type: formData.employee_type,
+                    reporting_person: formData.reporting_person,
                     is_active: formData.is_active,
                 };
 
@@ -102,7 +103,7 @@ const Employees = () => {
                     mail: "",
                     joining_date: "",
                     employee_type: "EMPLOYEE",
-                    // reporting_person: "",
+                    reporting_person: "",
                     is_active: true,
                 });
 
@@ -142,6 +143,7 @@ const Employees = () => {
                 mail: formData.mail,
                 joining_date: formData.joining_date,
                 employee_type: formData.employee_type,
+                reporting_person: formData.reporting_person,
                 is_active: formData.is_active,
             };
 
@@ -279,6 +281,10 @@ const Employees = () => {
                                     </th>
 
                                     <th className="px-4 py-3 text-left font-semibold text-slate-600">
+                                        Reporting Manager
+                                    </th>
+
+                                    <th className="px-4 py-3 text-left font-semibold text-slate-600">
                                         DOB
                                     </th>
 
@@ -327,6 +333,10 @@ const Employees = () => {
 
                                         <td className="px-4 py-4 font-medium text-slate-800">
                                             {employee.employee_name}
+                                        </td>
+
+                                        <td className="px-4 py-4 text-slate-600">
+                                            {employee.reporting_person || "-"}
                                         </td>
 
                                         <td className="px-4 py-4 text-slate-600">
@@ -405,9 +415,6 @@ const Employees = () => {
 
                             </div>
 
-                            <button type="button" onClick={() => setShowAddEmployee(false)}  className="rounded-lg px-3 py-2 text-sm text-slate-500 hover:bg-slate-100">
-                                Cancel
-                            </button>
 
                         </div>
 
@@ -548,22 +555,22 @@ const Employees = () => {
 
                             {/* Reporting Person */}
 
-                            {/* <div>
+                            <div>
 
                                 <label className="mb-2 block text-sm font-medium text-slate-700">
                                     Reporting Person
                                 </label>
 
                                 <input
-                                    type="number"
+                                    type="text"
                                     name="reporting_person"
                                     value={formData.reporting_person}
                                     onChange={handleInputChange}
-                                    placeholder="Database ID"
+                                    placeholder="Enter reporting manager"
                                     className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm outline-none focus:border-blue-500"
                                 />
 
-                            </div> */}
+                            </div> 
 
                         </div>
 
@@ -646,6 +653,7 @@ const Employees = () => {
                                         mail: selectedEmployees.mail,
                                         joining_date: selectedEmployees.joining_date,
                                         employee_type: selectedEmployees.employee_type,
+                                        reporting_person: selectedEmployees.reporting_person || "",
                                         is_active: selectedEmployees.is_active,
                                     });
 
@@ -828,6 +836,21 @@ const Employees = () => {
                                         Intern
                                     </option>
                                 </select>
+                            </div>
+
+                            <div>
+                                <label className="mb-1 block text-sm font-medium text-slate-700">
+                                    Reporting Manager
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="reporting_person"
+                                    value={formData.reporting_person}
+                                    onChange={handleInputChange}
+                                    placeholder="Enter reporting manager"
+                                    className="w-full rounded-xl border border-slate-300 px-4 py-2.5 outline-none focus:border-blue-500"
+                                />
                             </div>
 
                             <div className="flex items-center gap-3 pt-7">
