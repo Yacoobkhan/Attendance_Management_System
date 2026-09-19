@@ -5,6 +5,7 @@ import {
     Users,
     CalendarCheck,
     CalendarDays,
+    LogOut,
     ClipboardList,
 } from "lucide-react";
 
@@ -38,7 +39,11 @@ const Sidebar = () => {
         // },
     ];
 
+    
+
     return (
+
+        
         <aside className="fixed left-0 top-0 z-40 h-screen w-64 bg-slate-900 text-white">
 
             <div className="flex h-20 items-center gap-3 border-b border-slate-800 px-6">
@@ -98,6 +103,18 @@ const Sidebar = () => {
                 </nav>
 
             </div>
+
+            <button onClick={()=>{
+                localStorage.removeItem("access_token");
+                localStorage.removeItem("refresh_token");
+                window.location.href='/login';
+            }}
+            className="flex items-center gap-3 w-full px-4 py-3 text-left text-red-600 hover:bg-red-50 rounded-lg"
+            >
+
+                <LogOut size={20}/>
+                <span>Logout</span>
+            </button>
 
             
 
