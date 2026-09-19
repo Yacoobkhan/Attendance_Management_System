@@ -244,16 +244,15 @@ class MonthlyAttendanceReportView(generics.ListAPIView):
                 ).first()
 
                 # Before joining date
-                if attendance_date < employee.joining_date:
+                
+                if attendance_date.weekday() == 6:
+                    attendance_data[str(day)] = 'L'
+                    paid_holidays += 1
+
+                elif attendance_date < employee.joining_date:
 
                     attendance_data[str(day)] = 'NA'
                     na_days += 1
-
-                # Sunday
-                elif attendance_date.weekday() == 6:
-
-                    attendance_data[str(day)] = 'L'
-                    paid_holidays += 1
 
                 # Attendance exists
                 elif attendance:

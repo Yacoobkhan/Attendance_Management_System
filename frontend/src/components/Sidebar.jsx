@@ -11,11 +11,11 @@ import {
 const Sidebar = () => {
 
     const menuItems = [
-        {
-            name: "Dashboard",
-            path: "/",
-            icon: LayoutDashboard,
-        },
+        // {
+        //     name: "Dashboard",
+        //     path: "/",
+        //     icon: LayoutDashboard,
+        // },
         {
             name: "Employees",
             path: "/employees",
@@ -31,11 +31,11 @@ const Sidebar = () => {
             path: "/attendance/monthly",
             icon: CalendarDays,
         },
-        {
-            name: "Leave Management",
-            path: "/leave",
-            icon: ClipboardList,
-        },
+        // {
+        //     name: "Leave Management",
+        //     path: "/leave",
+        //     icon: ClipboardList,
+        // },
     ];
 
     return (
