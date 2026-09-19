@@ -91,14 +91,6 @@ class AttendanceDestroyView(generics.DestroyAPIView):
         
 #         return report
 
-from datetime import datetime
-
-from rest_framework import generics
-
-from employees.models import Employee
-from .models import Attendance
-from .serializers import DailyAttendanceReportSerializer
-
 
 class DailyAttendanceReportView(generics.ListAPIView):
 

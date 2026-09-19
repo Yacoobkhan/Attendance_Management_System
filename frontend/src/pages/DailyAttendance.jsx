@@ -68,6 +68,22 @@ const DailyAttendance = () => {
     };
 
 
+    //get Status display
+
+    const getStatusDisplay = (status) => {
+
+        if (status === "Paid Holiday") {
+            return "L";
+        }
+
+        if (status === "Not Applicable") {
+            return "NA";
+        }
+
+        return status;
+    };
+
+
     // -----------------------------------
     // Convert status label to status code
     // -----------------------------------
@@ -686,7 +702,7 @@ const DailyAttendance = () => {
                                                         )}`}
                                                     >
 
-                                                        {record.status}
+                                                        {getStatusDisplay(record.status)}
 
                                                     </span>
 
