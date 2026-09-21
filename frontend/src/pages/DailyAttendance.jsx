@@ -269,6 +269,15 @@ const DailyAttendance = () => {
             return;
         }
 
+        const today = new Date();
+
+        const todayString = today.toISOString().split("T")[0];
+
+        if(selectedDate > todayString){
+            setError("You cannot mark attendance for a future date.");
+            return;
+        }
+
         try {
 
             setLoading(true);
