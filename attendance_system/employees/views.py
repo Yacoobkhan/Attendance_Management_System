@@ -14,7 +14,7 @@ class ReportingUpdateView(generics.UpdateAPIView):
 
 class ReportingDeleteView(generics.DestroyAPIView):
     queryset = ReportingManager.objects.all()
-    serilaizer_class = ReportingManagerSerializer
+    serializer_class = ReportingManagerSerializer
 
 class TeamListCreateView(generics.ListCreateAPIView):
     queryset = Team.objects.filter(is_active=True)
@@ -48,9 +48,25 @@ class EmployeeDetailView(generics.RetrieveAPIView):
     queryset = Employee.objects.all()
     serializer_class = EmployeeSerializer
 
+# class EmployeeUpdateView(generics.UpdateAPIView):
+#     queryset = Employee.objects.all()
+#     serializer_class = EmployeeSerializer
+
 class EmployeeUpdateView(generics.UpdateAPIView):
     queryset = Employee.objects.all()
     serializer_class = EmployeeSerializer
+
+    def update(self, request, *args, **kwargs):
+        print("REQUEST DATA:", request.data)
+
+        response = super().update(request, *args, **kwargs)
+
+        employee = self.get_object()
+
+        print("SAVED REPORTING PERSON:", employee.reporting_person_id)
+        print("SAVED EMPLOYEE:", EmployeeSerializer(employee).data)
+
+        return response
 
 class EmployeeDestroyView(generics.DestroyAPIView):
     queryset = Employee.objects.all()

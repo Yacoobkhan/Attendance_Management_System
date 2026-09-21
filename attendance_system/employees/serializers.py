@@ -3,6 +3,8 @@ from .models import Employee, Team, Location, ReportingManager
 
 class EmployeeSerializer(serializers.ModelSerializer):
 
+    reporting_person_name = serializers.CharField(source='reporting_person.name',read_only=True)
+
     class Meta:
         model = Employee
         fields=[
@@ -18,6 +20,7 @@ class EmployeeSerializer(serializers.ModelSerializer):
             'joining_date',
             'employee_type',
             'reporting_person',
+            'reporting_person_name',
             'is_active',
         ]
 

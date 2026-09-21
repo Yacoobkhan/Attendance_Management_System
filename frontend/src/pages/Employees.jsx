@@ -16,6 +16,7 @@ const Employees = () => {
 
     const [teams, setTeams] = useState([]);
     const [locations, setLocations] = useState([]);
+    const [reportingManager,setReportingManager] = useState([])
 
 
     const [formData,setFormData] = useState({
@@ -47,7 +48,7 @@ const Employees = () => {
 
             const response = await api.get("/employees/");
 
-            console.log("Employees:", response.data);
+           console.log("FULL EMPLOYEE RESPONSE:", JSON.stringify(response.data, null, 2));
 
             setEmployees(response.data);
 
@@ -81,6 +82,15 @@ const fetchLocations = async () => {
         console.error("Failed to fetch locations:", error);
     }
 };
+
+const fetchReportingManager = async() =>{
+    try{
+        const response = await api.get(`/employees/reporting/`)
+        setReportingManager(response.data)
+    }catch(error){
+        console.error('Failed to fetch reporting manager: ',error)
+    }
+}
 
     const handleInputChange = (event) =>{
         const {name,value,type,checked} = event.target;
@@ -146,6 +156,7 @@ const fetchLocations = async () => {
                 console.error(
                     "Backend error:",
                     error.response?.data
+                    //JSON.stringify(error.response?.data, null, 2)
                 );
 
                 alert(
@@ -244,6 +255,7 @@ const fetchLocations = async () => {
         fetchEmployees();
         fetchTeams();
         fetchLocations();
+        fetchReportingManager();
 
     }, []);
 
@@ -268,7 +280,21 @@ const fetchLocations = async () => {
 
                 <button
                     type="button"
-                    onClick={() => setShowAddEmployee(true)}
+                    onClick={() => {
+                        setFormData({
+                            employee_name: "",
+                            dob: "",
+                            role: "",
+                            team: "",
+                            location: "",
+                            phone: "",
+                            mail: "",
+                            joining_date: "",
+                            employee_type: "EMPLOYEE",
+                            reporting_person: "",
+                            is_active: true
+                        });
+                        setShowAddEmployee(true)}}
                     className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-blue-700"
                 >
                     Add Employee
@@ -375,7 +401,7 @@ const fetchLocations = async () => {
                                         </td>
 
                                         <td className="px-4 py-4 text-slate-600">
-                                            {employee.reporting_person || "-"}
+                                            {employee.reporting_person_name || "-"}
                                         </td>
 
                                         <td className="px-4 py-4 text-slate-600">
@@ -608,14 +634,22 @@ const fetchLocations = async () => {
                                     Reporting Person
                                 </label>
 
-                                <input
-                                    type="text"
-                                    name="reporting_person"
-                                    value={formData.reporting_person}
-                                    onChange={handleInputChange}
-                                    placeholder="Enter reporting manager"
-                                    className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm outline-none focus:border-blue-500"
-                                />
+                                <select
+                                        name="reporting_person"
+                                        value={formData.reporting_person}
+                                        onChange={handleInputChange}
+                                        className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm outline-none focus:border-blue-500"
+                                    > 
+
+                                    <option value="">Select Reporting Manager</option>
+
+                                    {reportingManager.map((manager) => (
+                                        <option key={manager.id} value={manager.id}>
+                                            {manager.name}
+                                        </option>
+                                    ))}
+                                </select>
+
 
                             </div> 
 
@@ -929,18 +963,26 @@ const fetchLocations = async () => {
                             </div>
 
                             <div>
-                                <label className="mb-1 block text-sm font-medium text-slate-700">
+                                {/* <label className="mb-1 block text-sm font-medium text-slate-700">
                                     Reporting Manager
-                                </label>
+                                </label> */}
 
-                                <input
-                                    type="text"
+                                <select
                                     name="reporting_person"
                                     value={formData.reporting_person}
                                     onChange={handleInputChange}
-                                    placeholder="Enter reporting manager"
                                     className="w-full rounded-xl border border-slate-300 px-4 py-2.5 outline-none focus:border-blue-500"
-                                />
+                                >
+
+                                    <option value="">Select Reporting Manager</option>
+
+                                    {reportingManager.map((manager)=>(
+                                        <option key={manager.id} value={manager.id}>
+                                            {manager.name}
+                                        </option>
+                                    ))}
+
+                                </select>
                             </div>
 
                             <div>
