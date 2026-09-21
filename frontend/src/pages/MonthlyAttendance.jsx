@@ -378,6 +378,14 @@ const MonthlyAttendance = () => {
                                             Reporting Person
                                         </th>
 
+                                        <th className="border border-slate-200 px-4 py-3 text-left">
+                                            Team
+                                        </th>
+
+                                        <th className="border border-slate-200 px-4 py-3 text-left">
+                                            Location
+                                        </th>
+
 
                                         {/* Days */}
 
@@ -478,6 +486,20 @@ const MonthlyAttendance = () => {
                                                 <td className="border border-slate-200 px-4 py-3">
                                                     {
                                                         employee.reporting_person ||
+                                                        "-"
+                                                    }
+                                                </td>
+
+                                                <td className="border border-slate-200 px-4 py-3">
+                                                    {
+                                                        employee.team ||
+                                                        "-"
+                                                    }
+                                                </td>
+
+                                                <td className="border border-slate-200 px-4 py-3">
+                                                    {
+                                                        employee.location ||
                                                         "-"
                                                     }
                                                 </td>

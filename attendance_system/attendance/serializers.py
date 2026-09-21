@@ -135,6 +135,9 @@ class MonthlyAttendanceReportSerializer(serializers.Serializer):
     employee_name = serializers.CharField()
     employee_type = serializers.CharField()
     reporting_person = serializers.CharField(allow_null=True)
+    team = serializers.CharField(allow_null=True,allow_blank=True)
+    location = serializers.CharField(allow_null=True,allow_blank=True)
+
 
     attendance = serializers.DictField()
 

@@ -325,6 +325,10 @@ class MonthlyAttendanceReportView(generics.ListAPIView):
                     else None
                 ),
 
+                'team':(employee.team.name if employee.team else None),
+
+                'location':(employee.location.name if employee.location else None),
+
                 'attendance': attendance_data,
 
                 'working_days': working_days,
