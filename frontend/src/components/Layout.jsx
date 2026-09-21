@@ -3,6 +3,7 @@ import { Outlet } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
 import { useState } from "react";
+import { useOutletContext } from "react-router-dom";
 
 const Layout = () => {
 

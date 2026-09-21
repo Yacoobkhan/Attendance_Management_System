@@ -1,11 +1,15 @@
 import { useEffect, useState } from "react";
 import api from "../services/api";
+import { useOutletContext } from "react-router-dom";
+import { Search } from "lucide-react";
 
 const Employees = () => {
 
     const [employees, setEmployees] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+
+   const { searchValue } = useOutletContext();
 
     const [showAddEmployee,setShowAddEmployee] = useState(false)
 
@@ -259,6 +263,23 @@ const fetchReportingManager = async() =>{
 
     }, []);
 
+    const filteredEmployees = employees.filter((employee) =>{
+        const search = searchValue.toLowerCase()
+
+        const teamName = teams.find((team) => team.id === employee.team)?.name || "";
+
+        const locationName = locations.find((location) => location.id === employee.location)?.name || "";
+
+        return(
+            employee.employee_name?.toLowerCase().includes(search) ||
+            String(employee.employee_id).includes(search) ||
+            employee.role?.toLowerCase().includes(search) ||
+            employee.mail?.toLowerCase().includes(search) ||
+            teamName.toLowerCase().includes(search) || 
+            locationName.toLowerCase().includes(search)
+        )
+    })
+
 
     return (
         <div>
@@ -384,7 +405,7 @@ const fetchReportingManager = async() =>{
 
                             <tbody>
 
-                                {employees.map((employee) => (
+                                {filteredEmployees.map((employee) => (
 
                                     <tr
                                         key={employee.id}

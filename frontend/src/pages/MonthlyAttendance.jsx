@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
 import api from "../services/api";
+import { useOutletContext } from "react-router-dom";
 
 const MonthlyAttendance = () => {
 
     const [year, setYear] = useState(2026);
     const [month, setMonth] = useState(9);
+
+    const {searchValue} = useOutletContext();
 
     const [report, setReport] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -164,6 +167,20 @@ const MonthlyAttendance = () => {
 
         }
     };
+
+
+    const filteredReport = report.filter((employee) => {
+        const search = searchValue.toLowerCase();
+
+        return (
+            employee.employee_name?.toLowerCase().includes(search) ||
+            String(employee.employee_id || "").includes(search) ||
+            employee.reporting_person?.toLowerCase().includes(search) ||
+            employee.team?.toLowerCase().includes(search) ||
+            employee.location?.toLowerCase().includes(search) ||
+            employee.employee_type?.toLowerCase().includes(search)
+        );
+    });
 
     return (
         <div>
@@ -463,7 +480,7 @@ const MonthlyAttendance = () => {
 
                                 <tbody>
 
-                                    {report.map(
+                                    {filteredReport.map(
                                         (employee, index) => (
 
                                             <tr key={employee.employee} className="hover:bg-slate-50">
