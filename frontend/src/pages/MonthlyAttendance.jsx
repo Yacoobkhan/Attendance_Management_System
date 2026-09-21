@@ -110,7 +110,7 @@ const MonthlyAttendance = () => {
         setSelectedStatus(status);
     };
 
-    console.log("Selected Cell:", selectedCell);
+    // console.log("Selected Cell:", selectedCell);
 
     const handleSaveAttendance = async () => {
 

@@ -866,14 +866,6 @@ const fetchReportingManager = async() =>{
                                 </p>
                             </div>
 
-                            <button
-                                type="button"
-                                onClick={() => setShowEditEmployee(false)}
-                                className="rounded-lg px-3 py-2 text-sm text-slate-500 hover:bg-slate-100"
-                            >
-                                Cancel
-                            </button>
-
                         </div>
 
                         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">

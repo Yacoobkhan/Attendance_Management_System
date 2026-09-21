@@ -26,6 +26,16 @@ const Login = () => {
             localStorage.setItem('access_token',response.data.access)
             localStorage.setItem('refresh_token',response.data.refresh)
 
+            console.log(
+                "Access Token exists:",
+                !!localStorage.getItem("access_token")
+            );
+
+            console.log(
+                "Refresh Token exists:",
+                !!localStorage.getItem("refresh_token")
+            );
+
 
             navigate('/')
 
