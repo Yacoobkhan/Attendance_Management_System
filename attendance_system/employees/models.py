@@ -1,6 +1,31 @@
 from django.db import models
 
 # Create your models here.
+
+class Team(models.Model):
+    name = models.CharField(max_length=20,unique=True)
+    is_active = models.BooleanField(default = True)
+
+    def __str__(self):
+        return self.name
+
+class Location(models.Model):
+    name = models.CharField(max_length=30,unique=True)
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.name
+
+class ReportingManager(models.Model):
+    name = models.CharField(max_length=50,unique=True,null=True,blank=True)
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.name
+    
+    
+    
+
 class Employee(models.Model):
 
     EMPLOYEE_TYPE_CHOICES = [
@@ -14,6 +39,9 @@ class Employee(models.Model):
     role = models.CharField(max_length = 100)
     phone = models.CharField(max_length = 15)
     mail = models.EmailField(unique=True)
+    team = models.ForeignKey(Team,on_delete=models.SET_NULL,null=True,blank=True)
+    location = models.ForeignKey(Location,on_delete=models.SET_NULL,null=True)
+
     joining_date = models.DateField()
     is_active = models.BooleanField(default=True)
 

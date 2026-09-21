@@ -14,11 +14,16 @@ const Employees = () => {
 
     const [showEditEmployee,setShowEditEmployee] = useState(false);
 
+    const [teams, setTeams] = useState([]);
+    const [locations, setLocations] = useState([]);
+
 
     const [formData,setFormData] = useState({
         employee_name: "",
         dob: "",
         role: "",
+        team:"",
+        location:"",
         phone: "",
         mail: "",
         joining_date: "",
@@ -59,6 +64,24 @@ const Employees = () => {
         }
     };
 
+    const fetchTeams = async () => {
+    try {
+        const response = await api.get("/employees/teams/");
+        setTeams(response.data);
+    } catch (error) {
+        console.error("Failed to fetch teams:", error);
+    }
+};
+
+const fetchLocations = async () => {
+    try {
+        const response = await api.get("/employees/locations/");
+        setLocations(response.data);
+    } catch (error) {
+        console.error("Failed to fetch locations:", error);
+    }
+};
+
     const handleInputChange = (event) =>{
         const {name,value,type,checked} = event.target;
 
@@ -76,6 +99,8 @@ const Employees = () => {
                     employee_name: formData.employee_name,
                     dob: formData.dob,
                     role: formData.role,
+                    team: formData.team,
+                    location: formData.location,
                     phone: formData.phone,
                     mail: formData.mail,
                     joining_date: formData.joining_date,
@@ -99,6 +124,8 @@ const Employees = () => {
                     employee_name: "",
                     dob: "",
                     role: "",
+                    team: "",
+                    location: "",
                     phone: "",
                     mail: "",
                     joining_date: "",
@@ -139,6 +166,8 @@ const Employees = () => {
                 employee_name: formData.employee_name,
                 dob: formData.dob,
                 role: formData.role,
+                team: formData.team,
+                location: formData.location,
                 phone: formData.phone,
                 mail: formData.mail,
                 joining_date: formData.joining_date,
@@ -213,6 +242,8 @@ const Employees = () => {
     useEffect(() => {
 
         fetchEmployees();
+        fetchTeams();
+        fetchLocations();
 
     }, []);
 
@@ -285,6 +316,14 @@ const Employees = () => {
                                     </th>
 
                                     <th className="px-4 py-3 text-left font-semibold text-slate-600">
+                                        Team
+                                    </th>
+
+                                    <th className="px-4 py-3 text-left font-semibold text-slate-600">
+                                        Location
+                                    </th>
+
+                                    <th className="px-4 py-3 text-left font-semibold text-slate-600">
                                         DOB
                                     </th>
 
@@ -337,6 +376,14 @@ const Employees = () => {
 
                                         <td className="px-4 py-4 text-slate-600">
                                             {employee.reporting_person || "-"}
+                                        </td>
+
+                                        <td className="px-4 py-4 text-slate-600">
+                                            {teams.find((team) => team.id === employee.team)?.name || "-"}
+                                        </td>
+
+                                        <td className="px-4 py-4 text-slate-600">
+                                            {locations.find((location) => location.id === employee.location)?.name || "-"}
                                         </td>
 
                                         <td className="px-4 py-4 text-slate-600">
@@ -572,6 +619,47 @@ const Employees = () => {
 
                             </div> 
 
+                            <div>
+                                <label className="mb-2 block text-sm font-medium text-slate-700">
+                                    Team
+                                </label>
+
+                                <select
+                                    name="team"
+                                    value={formData.team}
+                                    onChange={handleInputChange}
+                                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm outline-none focus:border-blue-500"
+                                >
+                                    <option value="">Select team</option>
+                                    {teams.map((team) => (
+                                            <option key={team.id} value={team.id}>
+                                                {team.name}
+                                            </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div>
+                                <label className="mb-2 block text-sm font-medium text-slate-700">
+                                    Location
+                                </label>
+
+                                <select
+                                    name="location"
+                                    value={formData.location}
+                                    onChange={handleInputChange}
+                                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm outline-none focus:border-blue-500"
+                                >
+                                    <option value="">Select location</option>
+                                    {locations.map((location) => (
+                                        <option key={location.id} value={location.id}>
+                                            {location.name}
+                                        </option>
+
+                                    ))}
+                                </select>
+                            </div>
+
                         </div>
 
 
@@ -649,6 +737,8 @@ const Employees = () => {
                                         employee_name: selectedEmployees.employee_name,
                                         dob: selectedEmployees.dob,
                                         role: selectedEmployees.role,
+                                        team: selectedEmployees.team || "",
+                                        location: selectedEmployees.location || "",
                                         phone: selectedEmployees.phone,
                                         mail: selectedEmployees.mail,
                                         joining_date: selectedEmployees.joining_date,
@@ -851,6 +941,47 @@ const Employees = () => {
                                     placeholder="Enter reporting manager"
                                     className="w-full rounded-xl border border-slate-300 px-4 py-2.5 outline-none focus:border-blue-500"
                                 />
+                            </div>
+
+                            <div>
+                                <label className="mb-2 block text-sm font-medium text-slate-700">
+                                    Team
+                                </label>
+
+                                <select
+                                    name="team"
+                                    value={formData.team}
+                                    onChange={handleInputChange}
+                                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm outline-none focus:border-blue-500"
+                                >
+                                    <option value="">Select team</option>
+                                    
+                                    {teams.map((team) => (
+                                        <option key={team.id} value={team.id}>
+                                            {team.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div>
+                                <label className="mb-2 block text-sm font-medium text-slate-700">
+                                    Location
+                                </label>
+
+                               <select
+                                    name="location"
+                                    value={formData.location}
+                                    onChange={handleInputChange}
+                                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm outline-none focus:border-blue-500"
+                                >
+                                    <option value="">Select location</option>
+                                    {locations.map((location) => (
+                                        <option key={location.id} value={location.id}>
+                                            {location.name}
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
 
                             <div className="flex items-center gap-3 pt-7">

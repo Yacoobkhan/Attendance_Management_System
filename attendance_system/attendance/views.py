@@ -273,13 +273,21 @@ class MonthlyAttendanceReportView(generics.ListAPIView):
                         working_days += 1
                         wfh += 1
 
-                    elif status in ['SL', 'CL']:
-
+                    #Sick Leave
+                    elif status == 'SL':
                         absent_days += 1
 
-                    elif status in ['0.5SL', '0.5CL']:
+                    # Casual Leave
+                    elif status == 'CL':
+                        absent_days += 1
 
-                        half_absent_days += 0.5
+                     # Half Sick Leave
+                    elif status == '0.5SL':
+                        absent_days += 0.5
+
+                    # Half Casual Leave
+                    elif status == '0.5CL':
+                        absent_days += 0.5
 
                     elif status == 'NA':
 
@@ -289,6 +297,7 @@ class MonthlyAttendanceReportView(generics.ListAPIView):
                 else:
 
                     attendance_data[str(day)] = ''
+                total_days = working_days + paid_holidays
 
             report.append({
 
@@ -299,7 +308,7 @@ class MonthlyAttendanceReportView(generics.ListAPIView):
                 'employee_type': employee.get_employee_type_display(),
 
                 'reporting_person': (
-                    employee.reporting_person.employee_name
+                    employee.reporting_person
                     if employee.reporting_person
                     else None
                 ),
@@ -327,4 +336,5 @@ class MonthlyAttendanceReportView(generics.ListAPIView):
                 'remarks': '',
             })
 
+        
         return report

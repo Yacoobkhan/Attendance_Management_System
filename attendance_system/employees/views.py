@@ -1,9 +1,44 @@
 # from django.shortcuts import render
 from rest_framework import generics  
-from .models import Employee
-from .serializers import EmployeeSerializer
+from .models import Employee, Team, Location, ReportingManager
+from .serializers import EmployeeSerializer, TeamSerializer, LocationSerializer, ReportingManagerSerializer
 
-# Create your views here.
+
+class ReportingListCreateView(generics.ListCreateAPIView):
+    queryset = ReportingManager.objects.filter(is_active=True)
+    serializer_class = ReportingManagerSerializer
+
+class ReportingUpdateView(generics.UpdateAPIView):
+    queryset = ReportingManager.objects.all()
+    serializer_class = ReportingManagerSerializer
+
+class ReportingDeleteView(generics.DestroyAPIView):
+    queryset = ReportingManager.objects.all()
+    serilaizer_class = ReportingManagerSerializer
+
+class TeamListCreateView(generics.ListCreateAPIView):
+    queryset = Team.objects.filter(is_active=True)
+    serializer_class = TeamSerializer
+
+class TeamUpdateView(generics.UpdateAPIView):
+    queryset = Team.objects.all()
+    serializer_class = TeamSerializer
+
+class TeamDeleteView(generics.DestroyAPIView):
+    queryset = Team.objects.all()
+    serializer_class = TeamSerializer
+
+class LocationUpdateView(generics.UpdateAPIView):
+    queryset = Location.objects.all()
+    serializer_class = LocationSerializer    
+
+class LocationDeleteView(generics.DestroyAPIView):
+    queryset = Location.objects.all()
+    serializer_class = LocationSerializer 
+
+class LocationListCreateView(generics.ListCreateAPIView):
+    queryset = Location.objects.filter(is_active=True)
+    serializer_class = LocationSerializer
 
 class EmployeeListCreateView(generics.ListCreateAPIView):
     queryset = Employee.objects.all()
