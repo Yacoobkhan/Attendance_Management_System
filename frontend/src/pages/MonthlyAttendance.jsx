@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import api from "../services/api";
 
 const MonthlyAttendance = () => {
@@ -56,6 +56,10 @@ const MonthlyAttendance = () => {
             setLoading(false);
         }
     };
+
+    useEffect(() =>{
+        handleViewReport();
+    },[])
 
 
     const getStatusClass = (status) => {
