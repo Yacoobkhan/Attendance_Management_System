@@ -105,6 +105,9 @@ class DailyAttendanceReportSerializer(serializers.ModelSerializer):
     attendance_id = serializers.IntegerField(allow_null=True)
     employee_id = serializers.IntegerField()
     employee_name = serializers.CharField()
+    reporting_person = serializers.CharField(allow_null=True,allow_blank=True)
+    team = serializers.CharField(allow_null=True,allow_blank=True)
+    location = serializers.CharField(allow_null=True,allow_blank=True)
     status = serializers.CharField()
     date = serializers.DateField()
     day = serializers.CharField(allow_blank=True)
@@ -117,6 +120,9 @@ class DailyAttendanceReportSerializer(serializers.ModelSerializer):
             'attendance_id',
             'employee_id',
             'employee_name',
+            'reporting_person',
+            'team',
+            'location',
             'status',
             'date',
             'day',

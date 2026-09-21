@@ -643,6 +643,19 @@ const DailyAttendance = () => {
                                     </th>
 
                                     <th className="px-4 py-3 text-left font-medium text-slate-600">
+                                        Reporting Manager
+                                    </th>
+
+                                    <th className="px-4 py-3 text-left font-medium text-slate-600">
+                                        Team
+                                    </th>
+
+                                    <th className="px-4 py-3 text-left font-medium text-slate-600">
+                                        Location
+                                    </th>
+
+
+                                    <th className="px-4 py-3 text-left font-medium text-slate-600">
                                         Status
                                     </th>
 
@@ -693,6 +706,17 @@ const DailyAttendance = () => {
 
                                                 </td>
 
+                                                <td className="px-4 py-4 text-slate-600">
+                                                    {record.reporting_person || "-"}
+                                                </td>
+
+                                                <td className="px-4 py-4 text-slate-600">
+                                                    {record.team || "-"}
+                                                </td>
+
+                                                <td className="px-4 py-4 text-slate-600">
+                                                    {record.location || "-"}
+                                                </td>
 
                                                 <td className="px-4 py-4">
 
