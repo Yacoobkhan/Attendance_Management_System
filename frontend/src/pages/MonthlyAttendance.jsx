@@ -4,8 +4,10 @@ import { useOutletContext } from "react-router-dom";
 
 const MonthlyAttendance = () => {
 
-    const [year, setYear] = useState(2026);
-    const [month, setMonth] = useState(9);
+    const today = new Date();
+
+    const [year, setYear] = useState(today.getFullYear());
+    const [month, setMonth] = useState(today.getMonth() + 1);
 
     const {searchValue} = useOutletContext();
 
@@ -753,14 +755,6 @@ const MonthlyAttendance = () => {
                                 </p>
 
                             </div>
-
-                            <button
-                                type="button"
-                                onClick={() => setSelectedCell(null)}
-                                className="rounded-lg px-3 py-2 text-sm text-slate-500 hover:bg-slate-100 hover:text-slate-700"
-                            >
-                                Cancel
-                            </button>
 
                         </div>
 

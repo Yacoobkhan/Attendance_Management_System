@@ -17,8 +17,8 @@ class ReportingDeleteView(generics.DestroyAPIView):
     serializer_class = ReportingManagerSerializer
 
 class TeamListCreateView(generics.ListCreateAPIView):
-    queryset = Team.objects.filter(is_active=True)
-    serializer_class = TeamSerializer
+        queryset = Team.objects.filter(is_active=True)
+        serializer_class = TeamSerializer
 
 class TeamUpdateView(generics.UpdateAPIView):
     queryset = Team.objects.all()

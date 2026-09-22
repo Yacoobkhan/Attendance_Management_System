@@ -42,56 +42,6 @@ class AttendanceDestroyView(generics.DestroyAPIView):
     queryset = Attendance.objects.all()
     serializer_class = AttendanceSerializers
 
-# class DailyAttendanceReportView(generics.ListAPIView):
-#     serializer_class =  DailyAttendanceReportSerializer
-
-#     def get_queryset(self):
-#         attendance_date = self.request.query_params.get('date')
-
-#         if not attendance_date:
-#             return []
-
-#         report_date = datetime.strptime(attendance_date, '%Y-%m-%d').date()
-
-#         report_day = report_date.strftime('%A')
-
-#         employees = Employee.objects.filter(is_active=True).order_by('employee_id')
-
-#         report = []
-
-#         for employee in employees:
-#             attendance = Attendance.objects.filter(employee=employee,date = attendance_date).first()
-            
-#             if attendance:
-#                 attendance_data = AttendanceSerializers(attendance).data
-
-#                 report.append({
-#                     'employee': employee.id,
-#                     'attendance_id': attendance.id,
-#                     'employee_id': employee.employee_id,
-#                     'employee_name': employee.employee_name,
-#                     'status': attendance.get_status_display(),
-#                     'date': attendance.date,
-#                     'day': attendance.day,
-#                     'remarks': attendance.remarks,
-#                 })
-
-#             else:
-
-#                 report.append({
-#                     'employee': employee.id,
-#                     'attendance_id': None,
-#                     'employee_id': employee.employee_id,
-#                     'employee_name': employee.employee_name,
-#                     'status': 'Not Marked',
-#                     'date': report_date,
-#                     'day': report_day,
-#                     'remarks': 'Attendance not marked',
-#                 })
-        
-#         return report
-
-
 class DailyAttendanceReportView(generics.ListAPIView):
 
     serializer_class = DailyAttendanceReportSerializer
@@ -319,11 +269,7 @@ class MonthlyAttendanceReportView(generics.ListAPIView):
 
                 'employee_type': employee.get_employee_type_display(),
 
-                'reporting_person': (
-                    employee.reporting_person
-                    if employee.reporting_person
-                    else None
-                ),
+                'reporting_person': ( employee.reporting_person if employee.reporting_person else None),
 
                 'team':(employee.team.name if employee.team else None),
 

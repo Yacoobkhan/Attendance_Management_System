@@ -52,7 +52,7 @@ const Employees = () => {
 
             const response = await api.get("/employees/");
 
-           console.log("FULL EMPLOYEE RESPONSE:", JSON.stringify(response.data, null, 2));
+        //    console.log("FULL EMPLOYEE RESPONSE:", JSON.stringify(response.data, null, 2));
 
             setEmployees(response.data);
 
@@ -70,31 +70,31 @@ const Employees = () => {
     };
 
     const fetchTeams = async () => {
-    try {
-        const response = await api.get("/employees/teams/");
-        setTeams(response.data);
-    } catch (error) {
-        console.error("Failed to fetch teams:", error);
-    }
-};
+        try {
+            const response = await api.get("/employees/teams/");
+            setTeams(response.data);
+        } catch (error) {
+            console.error("Failed to fetch teams:", error);
+        }
+    };
 
-const fetchLocations = async () => {
-    try {
-        const response = await api.get("/employees/locations/");
-        setLocations(response.data);
-    } catch (error) {
-        console.error("Failed to fetch locations:", error);
-    }
-};
+    const fetchLocations = async () => {
+        try {
+            const response = await api.get("/employees/locations/");
+            setLocations(response.data);
+        } catch (error) {
+            console.error("Failed to fetch locations:", error);
+        }
+    };
 
-const fetchReportingManager = async() =>{
-    try{
-        const response = await api.get(`/employees/reporting/`)
-        setReportingManager(response.data)
-    }catch(error){
-        console.error('Failed to fetch reporting manager: ',error)
+    const fetchReportingManager = async() =>{
+        try{
+            const response = await api.get(`/employees/reporting/`)
+            setReportingManager(response.data)
+        }catch(error){
+            console.error('Failed to fetch reporting manager: ',error)
+        }
     }
-}
 
     const handleInputChange = (event) =>{
         const {name,value,type,checked} = event.target;
@@ -1040,16 +1040,10 @@ const fetchReportingManager = async() =>{
                             </div>
 
                             <div className="flex items-center gap-3 pt-7">
+                                <label className="flex items-center gap-2 text-sm text-slate-700">
 
-                                <input
-                                    type="checkbox"
-                                    name="is_active"
-                                    checked={formData.is_active}
-                                    onChange={handleInputChange}
-                                    className="h-4 w-4"
-                                />
+                                     <input type="checkbox" name="is_active" checked={formData.is_active} onChange={handleInputChange}    className="h-4 w-4 rounded border-slate-300"/>
 
-                                <label className="text-sm font-medium text-slate-700">
                                     Active Employee
                                 </label>
 
