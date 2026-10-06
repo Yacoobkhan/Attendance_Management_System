@@ -44,18 +44,17 @@ INSTALLED_APPS = [
     'employees',
     'attendance',
     'leave',
-
 ]
 
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.security.SecurityMiddleware',  #security related protection
+    'django.contrib.sessions.middleware.SessionMiddleware', #session management
+    'corsheaders.middleware.CorsMiddleware', # cors 
+    'django.middleware.common.CommonMiddleware', #common http request related functions 
+    'django.middleware.csrf.CsrfViewMiddleware', # cross site request forgery
+    'django.contrib.auth.middleware.AuthenticationMiddleware', # authentication
+    'django.contrib.messages.middleware.MessageMiddleware', #message framework
+    'django.middleware.clickjacking.XFrameOptionsMiddleware', #protect from malicious attacks
 ]
 
 ROOT_URLCONF = 'attendance_system.urls'

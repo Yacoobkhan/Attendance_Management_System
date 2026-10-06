@@ -3,7 +3,6 @@ from rest_framework import generics
 from .models import Employee, Team, Location, ReportingManager
 from .serializers import EmployeeSerializer, TeamSerializer, LocationSerializer, ReportingManagerSerializer
 
-
 class ReportingListCreateView(generics.ListCreateAPIView):
     queryset = ReportingManager.objects.filter(is_active=True)
     serializer_class = ReportingManagerSerializer
