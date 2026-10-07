@@ -1,21 +1,27 @@
 import React from "react";
 import {View,Text, TextInput, Alert,Button,StyleSheet} from 'react-native';
 import { useState } from "react";
-import { loginUser } from "@/api/auth";
+import { useAuth } from "@/context/AuthContext";
 import {saveTokens} from'../src/utils/tokenStorage';
+import { useRouter } from "expo-router";
 
 export default function Login(){
+
+    const router = useRouter();
+
     const [username,setUsername] = useState("");
     const [password, setPassword] = useState("");
 
+    const {login} = useAuth();
+
     const handleLogin = async() =>{
         try{
-            const data = await loginUser(username,password);
+           await login(username,password)
+           router.replace('/daily-attendance')
 
-            await saveTokens(data.access,data.refresh);
-            console.log("LOGIN SUCCESS");
+           console.log("LOGIN SUCCESS");
 
-            Alert.alert("Success", "Login Successfull!!");
+           
         }catch(error){
             console.error("Login Failed: ",error)
 
