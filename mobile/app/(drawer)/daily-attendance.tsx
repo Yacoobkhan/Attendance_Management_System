@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
-import {View,Text,StyleSheet,FlatList,ActivityIndicator,TouchableOpacity} from "react-native";
+import {View,Text,StyleSheet,FlatList,ActivityIndicator,TouchableOpacity, Pressable, Modal, TextInput} from "react-native";
 
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { Picker } from '@react-native-picker/picker';
 
 import { useAuth } from "../../src/context/AuthContext";
-import { getDailyAttendance } from "../../src/api/attendance";
+import { getDailyAttendance, createAttendance, updateAttendance, } from "../../src/api/attendance";
 import { DailyAttendance } from "../../src/types/attendance";
 
 export default function DailyAttendanceScreen() {
@@ -16,6 +17,14 @@ export default function DailyAttendanceScreen() {
     const [selectedDate, setSelectedDate] = useState(new Date());
 
     const [showDatePicker, setShowDatePicker] = useState(false);
+
+    const [selectedEmployees, setSelectedEmployees] = useState<DailyAttendance | null>(null);
+
+    const [modalVisible, setModalVisible] = useState(false);
+
+    const [status,setStatus] = useState("");
+
+    const [remarks,setRemarks] = useState("");
 
     const [loading, setLoading] = useState(true);
 
@@ -112,6 +121,29 @@ export default function DailyAttendanceScreen() {
         }
     };
 
+    const statusMap: Record<string, string> = {
+        "Present": "X",
+        "Sick Leave": "SL",
+        "Leave": "L",
+        "Not Available": "NA",
+        "Work From Home": "WFH",
+        "Casual Leave": "CL",
+        "Half day Sick Leave": "0.5SL",
+        "Half day Casual Leave": "0.5CL",
+    };
+
+   const handleEmployeePress = (item: DailyAttendance) => {
+        setSelectedEmployees(item);
+
+        if (item.attendance_id === null) {
+            setStatus("");
+        } else {
+            setStatus(statusMap[item.status] ?? "");
+        }
+
+        setRemarks(item.remarks ?? "");
+        setModalVisible(true);
+    };
 
     // --------------------------------
     // SUMMARY COUNTS
@@ -174,6 +206,68 @@ export default function DailyAttendanceScreen() {
             </View>
         );
     }
+
+    const handleSaveAttendance = async () => {
+
+        if (!selectedEmployees || !accessToken) {
+            return;
+        }
+
+        if (!status) {
+            setError("Please select a status");
+            return;
+        }
+
+        try {
+
+            const attendanceData = {
+                employee: selectedEmployees.employee,
+                date: formatDateForAPI(selectedDate),
+                day: selectedDate.toLocaleDateString("en-US",{
+                    weekday: "long",
+                }),
+                status: status,
+                remarks: remarks,
+            };
+
+            if (selectedEmployees.attendance_id === null) {
+
+                // CREATE
+                await createAttendance(
+                    accessToken,
+                    attendanceData
+                );
+
+            } else {
+
+                // UPDATE
+                await updateAttendance(
+                    accessToken,
+                    selectedEmployees.attendance_id,
+                    attendanceData
+                );
+            }
+
+            setModalVisible(false);
+
+            // Refresh Daily Attendance
+            const data = await getDailyAttendance(
+                accessToken,
+                formatDateForAPI(selectedDate)
+            );
+
+            setAttendance(data);
+
+        } catch (error) {
+
+            console.error(
+                "SAVE ATTENDANCE ERROR:",
+                error
+            );
+
+            setError("Failed to save attendance");
+        }
+    };
 
 
     return (
@@ -322,49 +416,125 @@ export default function DailyAttendanceScreen() {
 
                 renderItem={({ item }) => (
 
-                    <View
-                        style={styles.employeeCard}
-                    >
+                   <Pressable
+    style={styles.employeeCard}
+    onPress={() => handleEmployeePress(item)}
+>
+    {/* Header */}
+    <View style={styles.employeeHeader}>
+        <View>
+            <Text style={styles.employeeName}>
+                {item.employee_name}
+            </Text>
 
-                        <Text style={styles.employeeName}>
-                            {item.employee_name}
-                        </Text>
+            <Text style={styles.employeeId}>
+                Employee ID: {item.employee_id}
+            </Text>
+        </View>
 
-                        <Text style={styles.info}>
-                            Employee ID:{" "}
-                            {item.employee_id}
-                        </Text>
+        <View
+            style={[
+                styles.statusBadge,
+                item.status === "Not Marked"
+                    ? styles.statusNotMarked
+                    : styles.statusOther,
+            ]}
+        >
+            <Text style={styles.statusBadgeText}>
+                {item.status}
+            </Text>
+        </View>
+    </View>
 
-                        <Text style={styles.info}>
-                            Team:{" "}
-                            {item.team ?? "N/A"}
-                        </Text>
+    {/* Employee Information */}
+    <View style={styles.infoRow}>
+        <View style={styles.infoItem}>
+            <Text style={styles.infoLabel}>TEAM</Text>
+            <Text style={styles.infoValue}>
+                {item.team ?? "N/A"}
+            </Text>
+        </View>
 
-                        <Text style={styles.info}>
-                            Location:{" "}
-                            {item.location ?? "N/A"}
-                        </Text>
+        <View style={styles.infoItem}>
+            <Text style={styles.infoLabel}>LOCATION</Text>
+            <Text style={styles.infoValue}>
+                {item.location ?? "N/A"}
+            </Text>
+        </View>
+    </View>
 
-                        <Text style={styles.info}>
-                            Reporting Person:{" "}
-                            {item.reporting_person ??
-                                "N/A"}
-                        </Text>
+    {/* Reporting Person */}
+    <View style={styles.reportingSection}>
+        <Text style={styles.infoLabel}>
+            REPORTING PERSON
+        </Text>
 
-                        <Text style={styles.info}>
-                            Status:{" "}
-                            {item.status}
-                        </Text>
+        <Text style={styles.infoValue}>
+            {item.reporting_person ?? "N/A"}
+        </Text>
+    </View>
 
-                        <Text style={styles.info}>
-                            Remarks:{" "}
-                            {item.remarks}
-                        </Text>
+    {/* Remarks */}
+    <View style={styles.remarksSection}>
+        <Text style={styles.infoLabel}>
+            REMARKS
+        </Text>
 
-                    </View>
+        <Text style={styles.remarksText}>
+            {item.remarks || "No remarks"}
+        </Text>
+    </View>
+</Pressable>
                 )}
 
             />
+
+            <Modal visible={modalVisible} transparent animationType="fade" onRequestClose={()=>setModalVisible(false)}>
+
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContent}> 
+                        <Text style={styles.modalTitle}>Mark Attendance</Text>
+
+                        <Text style={styles.employeeSubtitle}>{selectedEmployees?.employee_id} - {" "}{selectedEmployees?.employee_name}</Text>
+
+                        <Text style={styles.label}>Attendance Date</Text>
+
+                        <Text style={styles.dateField}>{formatDateForDisplay(selectedDate)}</Text>
+
+                        <Text style={styles.label}>Status</Text>
+
+                       <View style={styles.pickerContainer}>
+                            <Picker selectedValue={status} onValueChange={(value) => setStatus(value)}>
+                                <Picker.Item label="Select Status" value="" />
+                                <Picker.Item label="Present" value="X" />
+                                <Picker.Item label="Sick Leave" value="SL" />
+                                <Picker.Item label="Leave" value="L" />
+                                <Picker.Item label="Not Available" value="NA" />
+                                <Picker.Item label="Work From Home" value="WFH" />
+                                <Picker.Item label="Casual Leave" value="CL" />
+                                <Picker.Item label="Half day Sick Leave" value="0.5SL" />
+                                <Picker.Item label="Half day Casual Leave" value="0.5CL" />
+                            </Picker>
+                        </View>
+
+                        <Text style={styles.label}>Remarks</Text>
+
+                        <TextInput style={styles.remarksInput} value={remarks} placeholder="remarks" multiline onChangeText={setRemarks} />
+
+
+                        <View style={styles.modalButtons}>
+                            <Pressable style={styles.cancelButton} onPress={() => setModalVisible(false)}>
+                                <Text style={styles.cancelButtonText}>Cancel</Text>
+                            </Pressable>
+
+                            <Pressable onPress={handleSaveAttendance} style={styles.saveButton} >
+                                <Text style={styles.saveButtonText}>Save Attendance</Text>
+                            </Pressable>
+                        </View>
+                    </View>
+                </View>
+
+            </Modal>
 
         </View>
     );
@@ -629,26 +799,211 @@ const styles = StyleSheet.create({
         marginBottom: 12,
     },
 
+    // employeeCard: {
+    //     backgroundColor: "#ffffff",
+    //     borderWidth: 1,
+    //     borderColor: "#e2e8f0",
+    //     borderRadius: 12,
+    //     padding: 16,
+    //     marginBottom: 12,
+    // },
+
     employeeCard: {
-        backgroundColor: "#ffffff",
-        borderWidth: 1,
-        borderColor: "#e2e8f0",
-        borderRadius: 12,
-        padding: 16,
-        marginBottom: 12,
+    backgroundColor: "#ffffff",
+    borderRadius: 16,
+    padding: 18,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+
+    shadowColor: "#000",
+    shadowOffset: {
+        width: 0,
+        height: 2,
+    },
+    shadowOpacity: 0.08,
+    shadowRadius: 5,
+
+    elevation: 3,
+},
+
+employeeHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginBottom: 16,
+},
+
+employeeName: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#0f172a",
+},
+
+employeeId: {
+    fontSize: 13,
+    color: "#64748b",
+    marginTop: 4,
+},
+
+statusBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 20,
+},
+
+statusNotMarked: {
+    backgroundColor: "#fef3c7",
+},
+
+statusOther: {
+    backgroundColor: "#dcfce7",
+},
+
+statusBadgeText: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#334155",
+},
+
+infoRow: {
+    flexDirection: "row",
+    marginBottom: 14,
+},
+
+infoItem: {
+    flex: 1,
+},
+
+infoLabel: {
+    fontSize: 10,
+    fontWeight: "700",
+    color: "#94a3b8",
+    marginBottom: 4,
+    letterSpacing: 0.5,
+},
+
+infoValue: {
+    fontSize: 14,
+    color: "#334155",
+    fontWeight: "500",
+},
+
+reportingSection: {
+    borderTopWidth: 1,
+    borderTopColor: "#f1f5f9",
+    paddingTop: 12,
+    marginBottom: 12,
+},
+
+remarksSection: {
+    backgroundColor: "#f8fafc",
+    borderRadius: 10,
+    padding: 10,
+},
+
+remarksText: {
+    fontSize: 13,
+    color: "#475569",
+},
+
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: "rgba(0,0,0,0.5)",
+        justifyContent: "center",
+        alignItems: "center",
     },
 
-    employeeName: {
-        fontSize: 19,
+    modalContent: {
+        width: "90%",
+        backgroundColor: "#ffffff",
+        borderRadius: 12,
+        padding: 20,
+    },
+
+    modalTitle: {
+        fontSize: 20,
         fontWeight: "bold",
         color: "#111827",
-        marginBottom: 10,
-    },
-
-    info: {
-        fontSize: 14,
-        color: "#475569",
         marginBottom: 5,
     },
 
+    employeeSubtitle: {
+        fontSize: 14,
+        color: "#64748b",
+        marginBottom: 20,
+    },
+
+    label: {
+        fontSize: 14,
+        fontWeight: "600",
+        color: "#475569",
+        marginBottom: 6,
+        marginTop: 10,
+    },
+
+    dateField: {
+        borderWidth: 1,
+        borderColor: "#cbd5e1",
+        borderRadius: 8,
+        padding: 12,
+        color: "#475569",
+    },
+
+    input: {
+        borderWidth: 1,
+        borderColor: "#cbd5e1",
+        borderRadius: 8,
+        padding: 12,
+        fontSize: 15,
+    },
+
+    remarksInput: {
+        borderWidth: 1,
+        borderColor: "#cbd5e1",
+        borderRadius: 8,
+        padding: 12,
+        height: 90,
+        textAlignVertical: "top",
+    },
+
+    modalButtons: {
+        flexDirection: "row",
+        justifyContent: "flex-end",
+        marginTop: 20,
+        gap: 10,
+    },
+
+    cancelButton: {
+        borderWidth: 1,
+        borderColor: "#cbd5e1",
+        borderRadius: 8,
+        paddingVertical: 10,
+        paddingHorizontal: 16,
+    },
+
+    cancelButtonText: {
+        color: "#475569",
+        fontWeight: "600",
+    },
+
+    saveButton: {
+        backgroundColor: "#2563eb",
+        borderRadius: 8,
+        paddingVertical: 10,
+        paddingHorizontal: 16,
+    },
+
+    saveButtonText: {
+        color: "#ffffff",
+        fontWeight: "600",
+    },
+
+    pickerContainer: {
+        borderWidth: 1,
+        borderColor: "#cbd5e1",
+        borderRadius: 8,
+        overflow: "hidden",
+        backgroundColor: "#ffffff",
+    },
 });

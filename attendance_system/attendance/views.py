@@ -154,7 +154,7 @@ class DailyAttendanceReportView(generics.ListAPIView):
                     'status': 'Not Marked',
                     'date': report_date,
                     'day': report_day,
-                    'remarks': 'Attendance not marked',
+                    'remarks': "",
                 })
 
         return report
