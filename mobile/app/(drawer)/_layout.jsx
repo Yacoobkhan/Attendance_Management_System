@@ -16,7 +16,7 @@ export default function DrawerLayout() {
                 }}
             />
 
-            <Drawer.Screen name="employees/index" options={{
+            <Drawer.Screen name="employees" options={{
                     drawerLabel: "Employees",
                     title: "Employees",
                 }}
