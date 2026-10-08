@@ -84,3 +84,27 @@ export const updateAttendance = async (accessToken: string, attendanceId: number
 
     return await response.json();
 };
+
+
+export const getMonthlyAttendance = async(accessToken:string,year:number,month:number) => {
+    const url = `${API_BASE_URL}/attendance/report/monthly/?year=${year}&month=${month}`;
+    console.log("MONTHLY ATTENDANCE URL:", url);
+
+    
+
+    const response = await fetch(url,{
+        method:'GET',
+        headers:{
+            Authorization:`Bearer ${accessToken}`,
+            "Content-Type":'application/json',
+        },
+    })
+
+    if(!response.ok){
+        const errorData = await response.text();
+        console.error("Monthly Attendance Error: ", errorData);
+        throw new Error(`Monthly Attendance Error: ${response.status}`);
+    }
+
+    return await response.json();
+};
