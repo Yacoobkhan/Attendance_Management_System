@@ -6,7 +6,8 @@ import { View, Text, ActivityIndicator,StyleSheet,FlatList,Pressable } from "rea
 
 import { getTeams,getLocations,getReportingManagers } from "@/api/masterData";
 import { Team,Location,ReportingManager } from "@/types/masterData";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
+import { useCallback } from "react";
 
 
 
@@ -24,41 +25,61 @@ export default function Employees(){
 
     const [reportingManagers, setReportingManagers] = useState<ReportingManager[]>([])
 
-    useEffect(() =>{
-        const fetchData = async() =>{
-            if(!accessToken){
+    useFocusEffect(
+    useCallback(() => {
+
+        const fetchData = async () => {
+
+            if (!accessToken) {
                 return;
             }
 
-            try{
+            try {
                 setLoading(true);
                 setError("");
 
-                const [employeeData, teamData, locationData,reportingData,] = await Promise.all([
+                const [
+                    employeeData,
+                    teamData,
+                    locationData,
+                    reportingData,
+                ] = await Promise.all([
                     getEmployees(accessToken),
                     getTeams(accessToken),
                     getLocations(accessToken),
                     getReportingManagers(accessToken),
                 ]);
 
-                
+                console.log(
+                    "GET ALL EMPLOYEES:",
+                    JSON.stringify(employeeData, null, 2)
+                );
+
                 setEmployees(employeeData);
                 setTeams(teamData);
                 setLocations(locationData);
                 setReportingManagers(reportingData);
 
-            }catch(error){
-                console.error("Fetch Employee Error: ",error)
+            } catch (error) {
 
-                setError("Failed to load Employees.")
+                console.error(
+                    "Fetch Employee Error:",
+                    error
+                );
 
-            }finally{
+                setError("Failed to load Employees.");
+
+            } finally {
+
                 setLoading(false);
+
             }
-        }
+        };
 
         fetchData();
-    },[accessToken]);
+
+    }, [accessToken])
+);
 
     if(loading){
         return(

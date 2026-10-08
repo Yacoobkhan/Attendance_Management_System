@@ -1,2 +1,2 @@
-const API_BASE_URL="http://192.168.0.81:8000/api";
+const API_BASE_URL="http://192.168.0.121:8000/api";
 export default API_BASE_URL;

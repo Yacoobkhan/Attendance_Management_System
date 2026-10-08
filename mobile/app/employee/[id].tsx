@@ -84,6 +84,12 @@ export default function EmployeeDetail(){
                 <Text style={styles.backText}>Back</Text>
             </Pressable>
 
+            <Pressable onPress={() => router.push(`/employee/${employee.id}/edit`)}>
+                <Text>
+                    Edit Employee
+                </Text>
+            </Pressable>
+
             <View style={styles.card}>
 
                   <Text style={styles.name}>
