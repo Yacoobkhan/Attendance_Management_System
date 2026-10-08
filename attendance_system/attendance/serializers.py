@@ -21,13 +21,13 @@ class AttendanceSerializers(serializers.ModelSerializer):
             # 'early_checkout_minutes',
         ]
 
-    # def validate(self,attrs):
+    def validate(self,attrs):
     #     check_in = attrs.get('check_in_time', getattr(self.instance,'check_in_time',None))
     #     check_out = attrs.get('check_out_time',getattr(self.instance,'check_out_time',None))
 
-    #     attendance_date = attrs.get('date',getattr(self.instance,'date',None))
+        attendance_date = attrs.get('date',getattr(self.instance,'date',None))
 
-    #     day = attrs.get('day',getattr(self.instance,'day',None))
+        day = attrs.get('day',getattr(self.instance,'day',None))
 
     #     #status = attrs.get('status', getattr(self.instance, 'status', None))
 
@@ -36,18 +36,18 @@ class AttendanceSerializers(serializers.ModelSerializer):
     #             "Check-out time cannot be earlier than check-in time."
     #         )
 
-    #     if attendance_date and attendance_date > date.today():
-    #         raise serializers.ValidationError(
-    #             "Attendance date cannot be in future"
-    #         )
+        if attendance_date and attendance_date > date.today():
+            raise serializers.ValidationError(
+                "Attendance date cannot be in future"
+            )
 
-    #     if attendance_date and  day:
-    #         actual_day = attendance_date.strftime('%A')
+        if attendance_date and  day:
+            actual_day = attendance_date.strftime('%A')
 
-    #         if day != actual_day:
-    #             raise serializers.ValidationError(
-    #                 f'Day does not match the date. {attendance_date} is a {actual_day}'
-    #             )
+            if day != actual_day:
+                raise serializers.ValidationError(
+                    f'Day does not match the date. {attendance_date} is a {actual_day}'
+                )
 
         
 

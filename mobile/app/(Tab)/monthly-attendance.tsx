@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 
-import {View,Text,StyleSheet,FlatList, ActivityIndicator,TouchableOpacity,ScrollView,} from "react-native";
+import {View,Text,StyleSheet,FlatList, ActivityIndicator,TouchableOpacity,ScrollView,Modal,TextInput,Pressable,Alert} from "react-native";
+
+import {Picker} from '@react-native-picker/picker';
 
 import DateTimePicker from "@react-native-community/datetimepicker";
 
@@ -8,6 +10,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useAuth } from "@/context/AuthContext";
 import { getMonthlyAttendance } from "@/api/attendance";
+import { createAttendance, updateAttendance } from "@/api/attendance";
 
 import { MonthlyAttendance,MonthlyDayAttendance} from "@/types/attendance";
 
@@ -27,6 +30,21 @@ export default function MonthlyAttendanceScreen() {
 
     const [loading, setLoading] = useState(true);
 
+    const [selectedEmployee, setSelectedEmployee] =
+    useState<MonthlyAttendance | null>(null);
+
+    const [selectedDay, setSelectedDay] = useState<number | null>(null);
+
+    const [selectedAttendanceId, setSelectedAttendanceId] = useState<number | null>(null);
+
+    const [status, setStatus] = useState("");
+
+    const [remarks, setRemarks] = useState("");
+
+    const [saving, setSaving] = useState(false);
+
+    const [showEditModal,setShowEditModal] = useState(false);
+
     const [error, setError] = useState<string | null>(null);
 
     const year = selectedDate.getFullYear();
@@ -36,6 +54,16 @@ export default function MonthlyAttendanceScreen() {
     const formatMonthForDisplay = (date: Date) => {
         return date.toLocaleDateString("en-US", { month: "long",  year: "numeric",
         });
+    };
+
+    const getDateForDay = (day: number) => {
+        const date = new Date(year, month - 1, day);
+
+        return `${date.getFullYear()}-${String(
+            date.getMonth() + 1
+        ).padStart(2, "0")}-${String(
+            date.getDate()
+        ).padStart(2, "0")}`;
     };
 
     const handleDateChange = (
@@ -50,6 +78,8 @@ export default function MonthlyAttendanceScreen() {
         }
 
     };
+
+
 
     useFocusEffect(
         useCallback(() => {
@@ -121,6 +151,129 @@ export default function MonthlyAttendanceScreen() {
         return item.attendance[String(day)] ?? "";
 
     };
+
+    const handleAttendancePress = (
+            employee: MonthlyAttendance,
+            day: number
+        ) => {
+            const record = getAttendanceForDay(employee, day);
+
+            const attendanceRecord = typeof record === "string" ? null : record;
+
+            setSelectedEmployee(employee);
+            setSelectedDay(day);
+
+            // Attendance database ID
+            setSelectedAttendanceId(
+                attendanceRecord?.id ?? null
+            );
+
+            // Current status
+            setStatus(
+                attendanceRecord?.status ?? ""
+            );
+
+            // No day-level remarks available currently
+            setRemarks("");
+
+            setShowEditModal(true);
+        };
+
+        const handleSaveAttendance = async () => {
+        if (
+            !accessToken ||
+            !selectedEmployee ||
+            selectedDay === null
+        ) {
+            return;
+        }
+
+        if (!status) {
+            Alert.alert(
+                "Required",
+                "Please select an attendance status."
+            );
+            return;
+        }
+
+        try {
+            setSaving(true);
+
+            const date = getDateForDay(selectedDay);
+
+            const attendanceData = {
+                employee: selectedEmployee.employee,
+                date: date,
+                day: new Date(
+                    year,
+                    month - 1,
+                    selectedDay
+                ).toLocaleDateString("en-US", {
+                    weekday: "long",
+                }),
+                status: status,
+                remarks: remarks,
+            };
+
+            console.log(
+                "ATTENDANCE DATA:",
+                attendanceData
+            );
+
+            if (selectedAttendanceId !== null) {
+
+                // Existing attendance → UPDATE
+                await updateAttendance(
+                    accessToken,
+                    selectedAttendanceId,
+                    attendanceData
+                );
+
+            } else {
+
+                // No attendance → CREATE
+                await createAttendance(
+                    accessToken,
+                    attendanceData
+                );
+            }
+
+            // Close modal
+            setShowEditModal(false);
+
+            // Refresh monthly report
+            const data = await getMonthlyAttendance(
+                accessToken,
+                year,
+                month
+            );
+
+            setAttendance(data);
+
+            Alert.alert(
+                "Success",
+                "Attendance saved successfully."
+            );
+
+        } catch (error) {
+
+            console.error(
+                "SAVE MONTHLY ATTENDANCE ERROR:",
+                error
+            );
+
+            Alert.alert(
+                "Error",
+                "Failed to save attendance."
+            );
+
+        } finally {
+            setSaving(false);
+        }
+    };
+
+
+
 
 
     // --------------------------------
@@ -564,11 +717,12 @@ export default function MonthlyAttendanceScreen() {
 
                                             return (
 
-                                                <View
+                                                <Pressable
                                                     key={day}
                                                     style={
                                                         styles.dayCell
                                                     }
+                                                    onPress={() => handleAttendancePress(item,day)}
                                                 >
 
                                                     <View
@@ -592,7 +746,7 @@ export default function MonthlyAttendanceScreen() {
 
                                                     </View>
 
-                                                </View>
+                                                </Pressable>
 
                                             );
 
@@ -705,6 +859,163 @@ export default function MonthlyAttendanceScreen() {
                 )}
 
             />
+
+            <Modal
+                visible={showEditModal}
+                transparent
+                animationType="fade"
+                onRequestClose={() => setShowEditModal(false)}
+            >
+                <View style={styles.modalOverlay}>
+
+                    <View style={styles.modalContainer}>
+
+                        <Text style={styles.modalTitle}>
+                            Edit Attendance
+                        </Text>
+
+                        <Text style={styles.modalSubtitle}>
+                            Update attendance for the selected employee and date.
+                        </Text>
+
+                        {/* Employee and Date */}
+
+                        <View style={styles.formRow}>
+
+                            <View style={styles.formHalf}>
+                                <Text style={styles.inputLabel}>
+                                    Employee
+                                </Text>
+
+                                <View style={styles.readOnlyInput}>
+                                    <Text style={styles.inputText}>
+                                        {selectedEmployee?.employee_name ?? ""}
+                                    </Text>
+                                </View>
+                            </View>
+
+                            <View style={styles.formHalf}>
+                                <Text style={styles.inputLabel}>
+                                    Date
+                                </Text>
+
+                                <View style={styles.readOnlyInput}>
+                                    <Text style={styles.inputText}>
+                                        {selectedDay
+                                            ? getDateForDay(selectedDay)
+                                            : ""}
+                                    </Text>
+                                </View>
+                            </View>
+
+                        </View>
+
+                        {/* Attendance Status */}
+
+                        <Text style={styles.inputLabel}>
+                            Attendance Status
+                        </Text>
+
+                        <View style={styles.pickerContainer}>
+
+                            <Picker
+                                selectedValue={status}
+                                onValueChange={(value) => setStatus(value)}
+                            >
+                                <Picker.Item
+                                    label="Select Status"
+                                    value=""
+                                />
+
+                                <Picker.Item
+                                    label="Present"
+                                    value="X"
+                                />
+
+                                <Picker.Item
+                                    label="Sick Leave"
+                                    value="SL"
+                                />
+
+                                <Picker.Item
+                                    label="Leave"
+                                    value="L"
+                                />
+
+                                <Picker.Item
+                                    label="Not Available"
+                                    value="NA"
+                                />
+
+                                <Picker.Item
+                                    label="Work From Home"
+                                    value="WFH"
+                                />
+
+                                <Picker.Item
+                                    label="Casual Leave"
+                                    value="CL"
+                                />
+
+                                <Picker.Item
+                                    label="Half day Sick Leave"
+                                    value="0.5SL"
+                                />
+
+                                <Picker.Item
+                                    label="Half day Casual Leave"
+                                    value="0.5CL"
+                                />
+
+                            </Picker>
+
+                        </View>
+
+                        {/* Remarks */}
+
+                        <Text style={styles.inputLabel}>
+                            Remarks
+                        </Text>
+
+                        <TextInput
+                            value={remarks}
+                            onChangeText={setRemarks}
+                            placeholder="Enter remarks"
+                            multiline
+                            style={styles.remarksInput}
+                        />
+
+                        {/* Buttons */}
+
+                        <View style={styles.modalButtons}>
+
+                            <Pressable
+                                style={styles.cancelButton}
+                                onPress={() => setShowEditModal(false)}
+                            >
+                                <Text style={styles.cancelButtonText}>
+                                    Cancel
+                                </Text>
+                            </Pressable>
+
+                            <Pressable
+                                style={styles.saveButton}
+                                onPress={handleSaveAttendance}
+                                disabled={saving}
+                            >
+                                <Text style={styles.saveButtonText}>
+                                    {saving
+                                        ? "Saving..."
+                                        : "Save Attendance"}
+                                </Text>
+                            </Pressable>
+
+                        </View>
+
+                    </View>
+
+                </View>
+            </Modal>
 
         </SafeAreaView>
 
@@ -1101,6 +1412,118 @@ const styles = StyleSheet.create({
     remarksText: {
         fontSize: 13,
         color: "#475569",
+    },
+
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: "rgba(0, 0, 0, 0.35)",
+        justifyContent: "center",
+        alignItems: "center",
+    },
+
+    modalContainer: {
+        width: "90%",
+        backgroundColor: "#ffffff",
+        borderRadius: 16,
+        padding: 20,
+    },
+
+    modalTitle: {
+        fontSize: 20,
+        fontWeight: "700",
+        color: "#1e293b",
+    },
+
+    modalSubtitle: {
+        fontSize: 12,
+        color: "#64748b",
+        marginTop: 4,
+        marginBottom: 18,
+    },
+
+    formRow: {
+        flexDirection: "row",
+        gap: 10,
+    },
+
+    formHalf: {
+        flex: 1,
+    },
+
+    inputLabel: {
+        fontSize: 12,
+        fontWeight: "600",
+        color: "#475569",
+        marginBottom: 6,
+        marginTop: 10,
+    },
+
+    readOnlyInput: {
+        height: 46,
+        borderWidth: 1,
+        borderColor: "#dbe3ef",
+        borderRadius: 8,
+        backgroundColor: "#f8fafc",
+        justifyContent: "center",
+        paddingHorizontal: 12,
+    },
+
+    inputText: {
+        fontSize: 13,
+        color: "#334155",
+    },
+
+    pickerContainer: {
+        height: 50,
+        borderWidth: 1,
+        borderColor: "#cbd5e1",
+        borderRadius: 8,
+        overflow: "hidden",
+    },
+
+    remarksInput: {
+        minHeight: 70,
+        borderWidth: 1,
+        borderColor: "#cbd5e1",
+        borderRadius: 8,
+        padding: 10,
+        textAlignVertical: "top",
+    },
+
+    modalButtons: {
+        flexDirection: "row",
+        justifyContent: "flex-end",
+        gap: 10,
+        marginTop: 20,
+    },
+
+    cancelButton: {
+        height: 46,
+        paddingHorizontal: 18,
+        borderWidth: 1,
+        borderColor: "#cbd5e1",
+        borderRadius: 8,
+        justifyContent: "center",
+        alignItems: "center",
+    },
+
+    cancelButtonText: {
+        color: "#475569",
+        fontWeight: "600",
+    },
+
+    saveButton: {
+        height: 46,
+        paddingHorizontal: 18,
+        backgroundColor: "#2563eb",
+        borderRadius: 8,
+        justifyContent: "center",
+        alignItems: "center",
+    },
+
+    saveButtonText: {
+        color: "#ffffff",
+        fontWeight: "700",
     },
 
 });
