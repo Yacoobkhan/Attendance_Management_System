@@ -132,15 +132,6 @@ export default function EmployeeDetail(){
                 </Text>
             </Pressable>
 
-            <Pressable
-                style={styles.deleteButton}
-                onPress={handleDelete}
-            >
-                <Text style={styles.deleteButtonText}>
-                    Delete Employee
-                </Text>
-            </Pressable>
-
             <View style={styles.card}>
 
                   <Text style={styles.name}>
@@ -240,6 +231,15 @@ export default function EmployeeDetail(){
                             : "Inactive"}
                     </Text>
                 </View>
+
+                    <Pressable
+                        style={styles.deleteButton}
+                        onPress={handleDelete}
+                    >
+                        <Text style={styles.deleteButtonText}>
+                            Delete Employee
+                        </Text>
+                    </Pressable>
 
 
             </View>
