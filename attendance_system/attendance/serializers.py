@@ -51,7 +51,7 @@ class AttendanceSerializers(serializers.ModelSerializer):
 
         
 
-    #     return attrs
+        return attrs
 
     # def get_late_minutes(self,obj):
     #     office_start = time(9,0)
