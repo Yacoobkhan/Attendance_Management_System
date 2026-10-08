@@ -2,8 +2,8 @@ import { useAuth } from "@/context/AuthContext";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Employee } from "@/types/employee";
 import { useEffect, useState } from "react";
-import { getEmployee } from "@/api/employee";
-import { View,Text,ActivityIndicator, ScrollView , StyleSheet, Pressable} from "react-native";
+import { getEmployee, deleteEmployee } from "@/api/employee";
+import { View,Text,ActivityIndicator, ScrollView , StyleSheet, Pressable,Alert} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 
@@ -19,6 +19,48 @@ export default function EmployeeDetail(){
     const [loading,setLoading] = useState(true);
 
     const [error,setError] = useState("");
+
+    const handleDelete = async() => {
+        Alert.alert("Delete Employee",`Are you sure you want to delete ${employee?.employee_name}?`,[
+            {
+                text:'Cancel',
+                style:'cancel',
+            },
+            {
+                text:'Delete',
+                style:'destructive',
+                onPress:confirmDelete,
+            },
+        ])
+    }
+
+    const confirmDelete = async() => {
+        if(!accessToken || !employee){
+            return;
+        }
+
+        try{
+            await deleteEmployee(accessToken,employee.id);
+
+             Alert.alert(
+                "Success",
+                "Employee deleted successfully.",
+                [
+                    {
+                        text: "OK",
+                        onPress: () => {
+                            router.replace("/employees");
+                        },
+                    },
+                ]
+            );
+
+        }catch(error){
+            console.error("DELETE EMPLOYEE ERROR:", error);
+
+             Alert.alert("Delete Failed", "Failed to delete employee.");
+        }
+    }
 
     useEffect(() => {
         const fetchEmployee = async() => {
@@ -84,9 +126,18 @@ export default function EmployeeDetail(){
                 <Text style={styles.backText}>Back</Text>
             </Pressable>
 
-            <Pressable onPress={() => router.push(`/employee/${employee.id}/edit`)}>
-                <Text>
+            <Pressable style={styles.editButton} onPress={() => router.push(`/employee/${employee.id}/edit`)}>
+                <Text style={styles.editButtonText}>
                     Edit Employee
+                </Text>
+            </Pressable>
+
+            <Pressable
+                style={styles.deleteButton}
+                onPress={handleDelete}
+            >
+                <Text style={styles.deleteButtonText}>
+                    Delete Employee
                 </Text>
             </Pressable>
 
@@ -256,6 +307,38 @@ const styles = StyleSheet.create({
     value: {
         fontSize: 16,
         fontWeight: "500",
+    },
+    buttonContainer: {
+        marginTop: 25,
+    },
+
+    editButton: {
+        height: 50,
+        borderRadius: 8,
+        backgroundColor: "#2563eb",
+        justifyContent: "center",
+        alignItems: "center",
+    },
+
+    editButtonText: {
+        color: "#ffffff",
+        fontSize: 16,
+        fontWeight: "700",
+    },
+
+    deleteButton: {
+        height: 50,
+        borderRadius: 8,
+        backgroundColor: "#dc2626",
+        justifyContent: "center",
+        alignItems: "center",
+        marginTop: 12,
+    },
+
+    deleteButtonText: {
+        color: "#ffffff",
+        fontSize: 16,
+        fontWeight: "700",
     },
 })
 
